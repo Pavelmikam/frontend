@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AppRouter from '@/router/index';
-import useAuthStore from '@/store/authStore';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -21,12 +20,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const fetchMe = useAuthStore((state) => state.fetchMe);
-
-  useEffect(() => {
-    fetchMe();
-  }, [fetchMe]);
-
   return (
     <>
       <AppRouter />

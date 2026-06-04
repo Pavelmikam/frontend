@@ -5,6 +5,7 @@ export const ROLES = {
 };
 
 export const ROUTES = {
+  HOME:               '/',
   LOGIN:              '/login',
   REGISTER:           '/register',
   FORGOT_PASSWORD:    '/forgot-password',
@@ -50,6 +51,18 @@ export const API_ROUTES = {
   FAVORITES:                '/api/favorites',
   FAVORITE_TOGGLE:          (id) => `/api/favorites/${id}`,
   FAVORITE_CHECK:           (id) => `/api/favorites/${id}/check`,
+  // Rental requests (Phase 4)
+  RENTAL_REQUESTS:              '/api/rental-requests',
+  RENTAL_REQUEST:               (id) => `/api/rental-requests/${id}`,
+  RENTAL_REQUEST_STORE:         (propertyId) => `/api/rental-requests/properties/${propertyId}`,
+  RENTAL_REQUEST_DECIDE:        (id) => `/api/rental-requests/${id}/decide`,
+  RENTAL_REQUEST_CANCEL:        (id) => `/api/rental-requests/${id}/cancel`,
+  RENTAL_REQUEST_SCHEDULE:      (id) => `/api/rental-requests/${id}/schedule-visit`,
+  RENTAL_REQUEST_CONFIRM_VISIT: (id) => `/api/rental-requests/${id}/confirm-visit`,
+  RENTAL_REQUEST_DOCUMENTS:     (id) => `/api/rental-requests/${id}/documents`,
+  RENTAL_REQUEST_DOCUMENT:      (id, docId) => `/api/rental-requests/${id}/documents/${docId}`,
+  DOCUMENT_DOWNLOAD:            (docId) => `/api/documents/${docId}/download`,
+  DOCUMENT_VERIFY:              (docId) => `/api/documents/${docId}/verify`,
   // Saved searches
   SAVED_SEARCHES:             '/api/saved-searches',
   SAVED_SEARCH:               (id) => `/api/saved-searches/${id}`,
@@ -135,3 +148,36 @@ export const RADIUS_OPTIONS = [
 ];
 
 export const MAX_SAVED_SEARCHES = 10;
+
+// ─── Phase 4 — Demandes de Location ──────────────────────────────────────────
+
+export const ROUTES_LOCATAIRE = {
+  MES_CANDIDATURES: '/mes-candidatures',
+  CANDIDATURE:      (id) => `/candidatures/${id}`,
+};
+
+export const ROUTES_PROPRIETAIRE = {
+  PROPERTY_CANDIDATURES: (id) => `/mes-annonces/${id}/candidatures`,
+};
+
+export const DOCUMENT_TYPES = [
+  { value: 'cni',                  label: "Carte Nationale d'Identité" },
+  { value: 'passeport',            label: 'Passeport' },
+  { value: 'certificat_residence', label: 'Certificat de résidence' },
+  { value: 'bulletin_salaire',     label: 'Bulletin de salaire' },
+  { value: 'attestation_travail',  label: 'Attestation de travail' },
+  { value: 'releve_bancaire',      label: 'Relevé bancaire' },
+  { value: 'garant_cni',           label: 'CNI du garant' },
+  { value: 'garant_salaire',       label: 'Bulletin de salaire du garant' },
+  { value: 'autre',                label: 'Autre document' },
+];
+
+export const REQUIRED_DOCUMENT_TYPES = ['cni', 'bulletin_salaire'];
+
+export const RENTAL_REQUEST_STATUSES = [
+  { value: 'en_attente', label: 'En attente', color: 'yellow' },
+  { value: 'acceptee',   label: 'Acceptée',   color: 'green'  },
+  { value: 'refusee',    label: 'Refusée',    color: 'red'    },
+  { value: 'annulee',    label: 'Annulée',    color: 'gray'   },
+  { value: 'terminee',   label: 'Terminée',   color: 'blue'   },
+];

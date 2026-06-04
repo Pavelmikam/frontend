@@ -36,12 +36,8 @@ axiosInstance.interceptors.response.use(
 
     if (status === 401) {
       removeToken();
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        try {
-          window.location.replace('/login');
-        } catch {
-          // jsdom : ignorer silencieusement en environnement de test
-        }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
     }
 

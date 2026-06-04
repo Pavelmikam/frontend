@@ -1,4 +1,5 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import PrivateRoute  from '@/guards/PrivateRoute';
 import GuestRoute    from '@/guards/GuestRoute';
@@ -6,6 +7,9 @@ import RoleRoute     from '@/guards/RoleRoute';
 
 import PublicLayout  from '@/components/layout/PublicLayout';
 import PrivateLayout from '@/components/layout/PrivateLayout';
+import HomeLayout    from '@/components/layout/HomeLayout';
+
+import HomePage from '@/pages/home/HomePage';
 
 import LoginPage          from '@/pages/auth/LoginPage';
 import RegisterPage       from '@/pages/auth/RegisterPage';
@@ -28,85 +32,124 @@ import FavoritesPage           from '@/pages/locataire/FavoritesPage';
 import SavedSearchesPage       from '@/pages/locataire/SavedSearchesPage';
 import SavedSearchResultsPage  from '@/pages/search/SavedSearchResultsPage';
 
+import MyRequestsPage       from '@/pages/locataire/MyRequestsPage';
+import RequestDetailPage    from '@/pages/locataire/RequestDetailPage';
+import PropertyRequestsPage from '@/pages/proprietaire/PropertyRequestsPage';
+
+import useAuthStore from '@/store/authStore';
+import { ROUTES } from '@/utils/constants';
+
+const RootLayout = () => {
+  const navigate = useNavigate();
+  const fetchMe = useAuthStore((state) => state.fetchMe);
+  const logoutAction = useAuthStore((state) => state.logoutAction);
+
+  useEffect(() => {
+    fetchMe();
+  }, [fetchMe]);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logoutAction();
+      navigate(ROUTES.LOGIN, { replace: true });
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [navigate, logoutAction]);
+
+  return <Outlet />;
+};
+
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
-
-  /* ── Guest-only routes ── */
-  {
-    element: <GuestRoute />,
+    element: <RootLayout />,
     children: [
+      /* ── Home page (visiteurs) ── */
       {
-        element: <PublicLayout />,
+        element: <HomeLayout />,
         children: [
-          { path: '/login',           element: <LoginPage /> },
-          { path: '/register',        element: <RegisterPage /> },
-          { path: '/forgot-password', element: <ForgotPasswordPage /> },
-          { path: '/reset-password',  element: <ResetPasswordPage /> },
+          { path: '/', element: <HomePage /> },
         ],
       },
-    ],
-  },
 
-  { path: '/verify-email', element: <VerifyEmailPage /> },
+      /* ── Guest-only routes ── */
+      {
+        element: <GuestRoute />,
+        children: [
+          {
+            element: <PublicLayout />,
+            children: [
+              { path: '/login',           element: <LoginPage /> },
+              { path: '/register',        element: <RegisterPage /> },
+              { path: '/forgot-password', element: <ForgotPasswordPage /> },
+              { path: '/reset-password',  element: <ResetPasswordPage /> },
+            ],
+          },
+        ],
+      },
 
-  /* ── Public property routes (accessible to all) ── */
-  {
-    element: <PrivateLayout />,
-    children: [
-      { path: '/annonces',     element: <PublicListingPage /> },
-      { path: '/annonces/:id', element: <PropertyDetailPage /> },
-    ],
-  },
+      { path: '/verify-email', element: <VerifyEmailPage /> },
 
-  /* ── Authenticated routes ── */
-  {
-    element: <PrivateRoute />,
-    children: [
+      /* ── Public property routes (accessible to all) ── */
       {
         element: <PrivateLayout />,
         children: [
-          { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/profile',   element: <ProfilePage /> },
-          { path: '/mes-favoris',                  element: <FavoritesPage /> },
-          { path: '/mes-recherches',               element: <SavedSearchesPage /> },
-          { path: '/mes-recherches/:id/resultats', element: <SavedSearchResultsPage /> },
+          { path: '/annonces',     element: <PublicListingPage /> },
+          { path: '/annonces/:id', element: <PropertyDetailPage /> },
         ],
       },
-    ],
-  },
 
-  /* ── Propriétaire routes ── */
-  {
-    element: <RoleRoute roles={['proprietaire', 'admin']} />,
-    children: [
+      /* ── Authenticated routes ── */
       {
-        element: <PrivateLayout />,
+        element: <PrivateRoute />,
         children: [
-          { path: '/mes-annonces',              element: <MyPropertiesPage /> },
-          { path: '/mes-annonces/creer',        element: <CreatePropertyPage /> },
-          { path: '/mes-annonces/:id/modifier', element: <EditPropertyPage /> },
+          {
+            element: <PrivateLayout />,
+            children: [
+              { path: '/dashboard', element: <DashboardPage /> },
+              { path: '/profile',   element: <ProfilePage /> },
+              { path: '/mes-favoris',                  element: <FavoritesPage /> },
+              { path: '/mes-recherches',               element: <SavedSearchesPage /> },
+              { path: '/mes-recherches/:id/resultats', element: <SavedSearchResultsPage /> },
+              { path: '/mes-candidatures',             element: <MyRequestsPage /> },
+              { path: '/candidatures/:id',             element: <RequestDetailPage /> },
+            ],
+          },
         ],
       },
-    ],
-  },
 
-  /* ── Admin routes ── */
-  {
-    element: <RoleRoute roles={['admin']} />,
-    children: [
+      /* ── Propriétaire routes ── */
       {
-        element: <PrivateLayout />,
+        element: <RoleRoute roles={['proprietaire', 'admin']} />,
         children: [
-          { path: '/admin/moderation', element: <PendingPropertiesPage /> },
+          {
+            element: <PrivateLayout />,
+            children: [
+              { path: '/mes-annonces',                        element: <MyPropertiesPage /> },
+              { path: '/mes-annonces/creer',                  element: <CreatePropertyPage /> },
+              { path: '/mes-annonces/:id/modifier',           element: <EditPropertyPage /> },
+              { path: '/mes-annonces/:id/candidatures',       element: <PropertyRequestsPage /> },
+            ],
+          },
         ],
       },
+
+      /* ── Admin routes ── */
+      {
+        element: <RoleRoute roles={['admin']} />,
+        children: [
+          {
+            element: <PrivateLayout />,
+            children: [
+              { path: '/admin/moderation', element: <PendingPropertiesPage /> },
+            ],
+          },
+        ],
+      },
+
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
-
-  { path: '*', element: <NotFoundPage /> },
 ]);
 
 const AppRouter = () => <RouterProvider router={router} />;

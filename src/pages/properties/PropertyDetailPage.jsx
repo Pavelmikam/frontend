@@ -3,16 +3,19 @@ import { useState } from 'react';
 import {
   MapPin, BedDouble, Maximize2, Building2, ArrowLeft,
   Eye, Heart, Calendar, Phone, Mail, ChevronLeft, ChevronRight,
-  Pencil, Trash2
+  Pencil, Trash2, Send, AlertCircle
 } from 'lucide-react';
 import useProperty from '@/hooks/useProperty';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
+import { useRentalRequests } from '@/hooks/useRentalRequests';
+import useAuth from '@/hooks/useAuth';
 import useAuthStore from '@/store/authStore';
 import PropertyLocationMap from '@/components/property/PropertyLocationMap';
 import PropertyAmenitiesGrid from '@/components/property/PropertyAmenitiesGrid';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
 import PropertyApprovalBadge from '@/components/ui/PropertyApprovalBadge';
 import FavoriteButton from '@/components/ui/FavoriteButton';
+import ApplyModal from '@/components/rental/ApplyModal';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
@@ -22,11 +25,24 @@ import { ROUTES } from '@/utils/constants';
 const PropertyDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLocataire, isEmailVerified } = useAuth();
   const { data: property, isLoading, isError } = useProperty(id);
   const { deleteProperty } = usePropertyMutations();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+
+  const isOwner = isAuthenticated && user?.id === property?.owner?.id;
+  const isAdmin = isAuthenticated && user?.role === 'admin';
+
+  // Load user requests to check if one already exists for this property
+  const { data: myRequestsData } = useRentalRequests(
+    {},
+    { enabled: isLocataire }
+  );
+  const existingRequest = myRequestsData?.data?.find(
+    (r) => r.property?.id === Number(id)
+  );
 
   if (isLoading) {
     return (
@@ -50,8 +66,6 @@ const PropertyDetailPage = () => {
 
   const images = property.images ?? [];
   const currentImage = images[currentImageIndex];
-  const isOwner = isAuthenticated && user?.id === property.owner?.id;
-  const isAdmin = isAuthenticated && user?.role === 'admin';
 
   const handlePrevImage = () => setCurrentImageIndex((i) => (i > 0 ? i - 1 : images.length - 1));
   const handleNextImage = () => setCurrentImageIndex((i) => (i < images.length - 1 ? i + 1 : 0));
@@ -68,6 +82,59 @@ const PropertyDetailPage = () => {
   const formattedDate = property.created_at
     ? new Date(property.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
     : null;
+
+  const isPropertyAvailable = ['disponible', 'active'].includes(property.status);
+
+  const renderApplySection = () => {
+    if (!isAuthenticated || isOwner || isAdmin || !isLocataire) return null;
+
+    if (!isEmailVerified) {
+      return (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-orange-700">
+              <Link to={ROUTES.VERIFY_EMAIL} className="underline font-medium">Vérifiez votre email</Link>{' '}
+              pour pouvoir postuler sur ce bien.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!isPropertyAvailable) return null;
+
+    const isActive = existingRequest?.status === 'en_attente' || existingRequest?.status === 'acceptee';
+    const canReapply = existingRequest?.status === 'refusee' || existingRequest?.status === 'annulee';
+
+    return (
+      <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+        {isActive ? (
+          <>
+            <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+              <Send className="h-4 w-4 flex-shrink-0" />
+              <span>Candidature envoyée</span>
+            </div>
+            <Link
+              to={`/candidatures/${existingRequest.id}`}
+              className="block text-center text-sm text-blue-600 hover:underline"
+            >
+              Voir ma candidature →
+            </Link>
+          </>
+        ) : (
+          <Button
+            variant="primary"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={() => setShowApplyModal(true)}
+          >
+            <Send className="h-4 w-4" />
+            {canReapply ? 'Repostuler' : 'Postuler'}
+          </Button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -280,6 +347,9 @@ const PropertyDetailPage = () => {
                 </div>
               )}
 
+              {/* Apply section for tenant */}
+              {renderApplySection()}
+
               {/* Owner info */}
               {property.owner && (
                 <div className="mt-5 pt-5 border-t border-gray-100">
@@ -360,6 +430,13 @@ const PropertyDetailPage = () => {
           </Button>
         </div>
       </Modal>
+
+      {/* Apply modal */}
+      <ApplyModal
+        isOpen={showApplyModal}
+        onClose={() => setShowApplyModal(false)}
+        property={property}
+      />
     </div>
   );
 };

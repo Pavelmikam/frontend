@@ -10,3 +10,5 @@ export const useMyProperties = (params = {}) => {
     enabled: isAuthenticated && isProprietaire,
   });
 };
+
+export default useMyProperties;

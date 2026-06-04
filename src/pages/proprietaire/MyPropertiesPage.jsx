@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, Building2, Users } from 'lucide-react';
 import useMyProperties from '@/hooks/useMyProperties';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
@@ -153,6 +153,16 @@ const MyPropertiesPage = () => {
                       {formatPrice(property.price)} • {formatSurface(property.surface)}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">{property.views_count ?? 0} vue(s)</p>
+                    {(property.requests_count > 0) && (
+                      <Link
+                        to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Users className="h-3 w-3" />
+                        {property.requests_count} candidature(s) en attente
+                      </Link>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -160,6 +170,11 @@ const MyPropertiesPage = () => {
                     <Link to={`${ROUTES.ANNONCES}/${property.id}`}>
                       <Button variant="ghost" size="sm" className="flex items-center gap-1">
                         <Eye className="h-4 w-4" /> Voir
+                      </Button>
+                    </Link>
+                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}>
+                      <Button variant="ghost" size="sm" className="flex items-center gap-1 text-blue-500 hover:text-blue-700">
+                        <Users className="h-4 w-4" />
                       </Button>
                     </Link>
                     <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/modifier`}>

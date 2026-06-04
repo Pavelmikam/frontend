@@ -1,23 +1,27 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, NavLink } from 'react-router-dom';
-import { User, LogOut, ChevronDown, AlertTriangle, Plus, ShieldCheck, Heart, Bookmark } from 'lucide-react';
+import { User, LogOut, ChevronDown, AlertTriangle, Plus, ShieldCheck, Heart, Bookmark, Briefcase } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useRentalRequests } from '@/hooks/useRentalRequests';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import { ROUTES } from '@/utils/constants';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated, isEmailVerified } = useAuth();
+  const { user, logout, isAuthenticated, isEmailVerified, isLocataire, isProprietaire, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const isProprietaire = user?.role === 'proprietaire' || user?.role === 'admin';
-  const isAdmin = user?.role === 'admin';
-
   const { data: favData } = useFavorites({});
   const favCount = favData?.meta?.total ?? 0;
+
+  const { data: pendingRequestsData } = useRentalRequests(
+    { status: 'en_attente' },
+    { enabled: isAuthenticated }
+  );
+  const pendingCount = pendingRequestsData?.meta?.total ?? pendingRequestsData?.data?.length ?? 0;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -97,9 +101,33 @@ const Navbar = () => {
                     Recherches
                   </NavLink>
                 )}
+                {isLocataire && (
+                  <NavLink to="/mes-candidatures" className={({ isActive }) =>
+                    `text-sm font-medium transition-colors px-3 py-2 rounded-lg flex items-center gap-1.5 ${
+                      isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`
+                  }>
+                    <Briefcase className="h-4 w-4" />
+                    Candidatures
+                    {pendingCount > 0 && (
+                      <span className="ml-0.5 bg-blue-600 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+                        {pendingCount}
+                      </span>
+                    )}
+                  </NavLink>
+                )}
                 {isProprietaire && (
-                  <NavLink to={ROUTES.MES_ANNONCES} className={navLinkClass}>
+                  <NavLink to={ROUTES.MES_ANNONCES} className={({ isActive }) =>
+                    `relative text-sm font-medium transition-colors px-3 py-2 rounded-lg flex items-center gap-1.5 ${
+                      isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`
+                  }>
                     Mes annonces
+                    {pendingCount > 0 && (
+                      <span className="ml-0.5 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+                        {pendingCount}
+                      </span>
+                    )}
                   </NavLink>
                 )}
                 {isAdmin && (
@@ -172,6 +200,13 @@ const Navbar = () => {
                         <Bookmark className="h-4 w-4 text-gray-400" />
                         Mes recherches
                       </Link>
+                      {isLocataire && (
+                        <Link to="/mes-candidatures" onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                          <Briefcase className="h-4 w-4 text-gray-400" />
+                          Mes candidatures{pendingCount > 0 && ` (${pendingCount})`}
+                        </Link>
+                      )}
 
                       <div className="border-t border-gray-100 mt-1 pt-1">
                         <button onClick={handleLogout}

@@ -91,6 +91,47 @@ export const mockPendingProperty = {
   status: 'disponible',
 };
 
+export const mockRentalRequest = {
+  id: 1,
+  status: 'en_attente',
+  message: 'Bonjour, je suis très intéressé par ce logement.',
+  owner_response: null,
+  decided_at: null,
+  visit_scheduled_at: null,
+  visit_confirmed: false,
+  dossier_complete: false,
+  documents_count: 0,
+  created_at: '2026-02-01T10:00:00.000000Z',
+  updated_at: '2026-02-01T10:00:00.000000Z',
+  property: {
+    id: 1,
+    title: 'Appartement 3 pièces Bastos',
+    type: 'appartement',
+    price: '150000.00',
+    city: 'Yaoundé',
+    status: 'disponible',
+    primary_image: null,
+  },
+  tenant: {
+    id: 3,
+    name: 'Paul Locataire',
+    avatar_thumb_url: null,
+  },
+  documents: [],
+};
+
+export const mockRentalDocument = {
+  id: 1,
+  type: 'cni',
+  original_name: 'CNI_Paul.pdf',
+  mime_type: 'application/pdf',
+  file_size: 512000,
+  description: null,
+  is_verified: false,
+  verified_at: null,
+  created_at: '2026-02-02T10:00:00.000000Z',
+};
+
 export const mockSavedSearch = {
   id: 1,
   name: 'Studio Bastos',
@@ -413,5 +454,112 @@ export const handlers = [
     const auth = request.headers.get('Authorization');
     if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
     return HttpResponse.json(mockPaginatedProperties, { status: 200 });
+  }),
+
+  /* ─── Rental Requests (Phase 4) ─── */
+
+  http.get(`${API}/api/rental-requests`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({
+      data: [mockRentalRequest],
+      meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+    }, { status: 200 });
+  }),
+
+  http.get(`${API}/api/rental-requests/:id`, ({ request, params }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    if (params.id === '999') {
+      return HttpResponse.json({ message: 'Ressource introuvable.' }, { status: 404 });
+    }
+    return HttpResponse.json({
+      data: { ...mockRentalRequest, documents: [mockRentalDocument] }
+    }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/rental-requests/properties/:propertyId`, async ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    const body = await request.json();
+    if (body._simulateDouble) {
+      return HttpResponse.json({
+        message: 'Vous avez déjà une demande en cours pour ce bien.',
+        code: 'VALIDATION_ERROR',
+      }, { status: 422 });
+    }
+    if (body._simulateUnavailable) {
+      return HttpResponse.json({
+        message: "Ce bien n'est pas disponible à la location.",
+        code: 'VALIDATION_ERROR',
+      }, { status: 422 });
+    }
+    return HttpResponse.json({ data: mockRentalRequest }, { status: 201 });
+  }),
+
+  http.post(`${API}/api/rental-requests/:id/decide`, async ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    const body = await request.json();
+    if (body.action === 'refuse' && !body.owner_response) {
+      return HttpResponse.json({
+        message: 'Les données fournies sont invalides.',
+        errors: { owner_response: ['Un motif est obligatoire en cas de refus.'] },
+      }, { status: 422 });
+    }
+    const status = body.action === 'accept' ? 'acceptee' : 'refusee';
+    return HttpResponse.json({
+      message: body.action === 'accept'
+        ? 'Demande acceptée. Les autres candidatures ont été refusées.'
+        : 'Demande refusée.',
+      data: { ...mockRentalRequest, status, decided_at: new Date().toISOString() },
+    }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/rental-requests/:id/cancel`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({ message: 'Demande annulée.' }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/rental-requests/:id/schedule-visit`, async ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({ message: 'Visite planifiée.' }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/rental-requests/:id/confirm-visit`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({ message: 'Visite confirmée.' }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/rental-requests/:id/documents`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({ data: mockRentalDocument }, { status: 201 });
+  }),
+
+  http.delete(`${API}/api/rental-requests/:id/documents/:docId`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API}/api/documents/:docId/download`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({
+      download_url: `${API}/storage/documents/test.pdf?signature=abc123&expires=9999999999`,
+      expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    }, { status: 200 });
+  }),
+
+  http.post(`${API}/api/documents/:docId/verify`, ({ request }) => {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return HttpResponse.json({ message: 'Non authentifié.' }, { status: 401 });
+    return HttpResponse.json({
+      data: { ...mockRentalDocument, is_verified: true, verified_at: new Date().toISOString() }
+    }, { status: 200 });
   }),
 ];

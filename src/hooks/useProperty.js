@@ -8,3 +8,5 @@ export const useProperty = (id) => {
     enabled: !!id,
   });
 };
+
+export default useProperty;
