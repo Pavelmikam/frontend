@@ -8,17 +8,28 @@ import { ROUTES } from '@/utils/constants';
 
 const CreatePropertyPage = () => {
   const navigate = useNavigate();
-  const { createProperty } = usePropertyMutations();
+  const { createProperty, submitProperty } = usePropertyMutations();
   const [error, setError] = useState('');
+
+  const isLoading = createProperty.isPending || submitProperty.isPending;
 
   const handleSubmit = async ({ data, images }) => {
     setError('');
     try {
       const property = await createProperty.mutateAsync({ data, images });
-      navigate(`${ROUTES.ANNONCES}/${property.id}`);
+      if (property._imageUploadFailed) {
+        setError("Annonce créée, mais les photos n'ont pas pu être uploadées. Vous pouvez les ajouter depuis vos annonces.");
+      }
+      // Submit for admin review regardless of image upload result
+      await submitProperty.mutateAsync(property.id);
+      navigate(ROUTES.MES_ANNONCES);
     } catch (e) {
-      setError(e.userMessage || 'Erreur lors de la création de l\'annonce.');
-      throw e;
+      if (e.validationErrors) {
+        const messages = Object.values(e.validationErrors).flat().join(' ');
+        setError(messages);
+      } else {
+        setError(e.userMessage || "Erreur lors de la création de l'annonce.");
+      }
     }
   };
 
@@ -44,7 +55,7 @@ const CreatePropertyPage = () => {
 
         <PropertyFormSteps
           onSubmit={handleSubmit}
-          isSubmitting={createProperty.isPending}
+          isLoading={isLoading}
         />
       </div>
     </div>

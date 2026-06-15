@@ -51,7 +51,7 @@ const HomeNavbar = () => {
   const handleLogout = async () => {
     setMenuOpen(false);
     await logout();
-    navigate(ROUTES.LOGIN);
+    navigate(ROUTES.HOME);
   };
 
   return (

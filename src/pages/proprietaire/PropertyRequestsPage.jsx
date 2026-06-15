@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 import { ArrowLeft, Users, Clock, CheckCircle } from 'lucide-react';
 import { useRentalRequests, useRentalRequestMutations } from '@/hooks/useRentalRequests';
 import useProperty from '@/hooks/useProperty';
 import RentalRequestCard from '@/components/rental/RentalRequestCard';
 import DecideRequestModal from '@/components/rental/DecideRequestModal';
 import Spinner from '@/components/ui/Spinner';
-import { ROUTES } from '@/utils/constants';
 
 const TABS = [
   { key: '',           label: 'Toutes' },
@@ -108,7 +108,7 @@ const PropertyRequestsPage = () => {
                 key={req.id}
                 request={req}
                 viewAs="owner"
-                onClick={(id) => navigate(`/candidatures/${id}`)}
+                onClick={(id) => navigate(ROUTES.CANDIDATURE(id))}
                 onDecide={(reqId, action) => {
                   const target = requests.find((r) => r.id === reqId);
                   setDecideTarget({ ...target, action });

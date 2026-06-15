@@ -17,7 +17,11 @@ const schema = z.object({
   phone:                 z.string().regex(/^(\+?[0-9\s\-]{7,20})$/, 'Téléphone invalide').optional().or(z.literal('')),
   city:                  z.string().max(100).optional(),
   role:                  z.enum(['locataire', 'proprietaire'], { message: 'Choisissez un rôle' }),
-  password:              z.string().min(8, 'Minimum 8 caractères'),
+  password:              z.string()
+    .min(8, 'Minimum 8 caractères')
+    .regex(/[A-Z]/, 'Doit contenir au moins une majuscule')
+    .regex(/[a-z]/, 'Doit contenir au moins une minuscule')
+    .regex(/[0-9]/, 'Doit contenir au moins un chiffre'),
   password_confirmation: z.string().min(1, 'Confirmez le mot de passe'),
 }).refine((d) => d.password === d.password_confirmation, {
   message: 'Les mots de passe ne correspondent pas',
@@ -26,7 +30,12 @@ const schema = z.object({
 
 const getPasswordStrength = (password) => {
   if (!password || password.length < 6) return { label: 'Faible', color: 'bg-red-400', width: 'w-1/3' };
-  if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
+  if (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password)
+  ) {
     return { label: 'Fort', color: 'bg-green-500', width: 'w-full' };
   }
   return { label: 'Moyen', color: 'bg-yellow-400', width: 'w-2/3' };

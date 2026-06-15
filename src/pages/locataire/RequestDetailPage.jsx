@@ -12,9 +12,9 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
 import { formatPrice } from '@/utils/formatters';
+import { ROUTES } from '@/utils/constants';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { ROUTES } from '@/utils/constants';
 
 const RequestDetailPage = () => {
   const { id } = useParams();
@@ -42,7 +42,7 @@ const RequestDetailPage = () => {
       <div className="min-h-screen flex flex-col items-center justify-center text-gray-500">
         <Building2 className="h-12 w-12 mb-4 opacity-40" />
         <p className="text-lg font-medium">Candidature introuvable</p>
-        <Link to="/mes-candidatures" className="mt-4 text-blue-600 hover:underline text-sm">
+        <Link to={ROUTES.MES_CANDIDATURES} className="mt-4 text-blue-600 hover:underline text-sm">
           Retour aux candidatures
         </Link>
       </div>
@@ -54,7 +54,7 @@ const RequestDetailPage = () => {
   const canEdit = viewAs === 'tenant' && request.status === 'en_attente';
   const isAdmin = user?.role === 'admin';
 
-  const backPath = viewAs === 'tenant' ? '/mes-candidatures' : `/mes-annonces/${property.id}/candidatures`;
+  const backPath = viewAs === 'tenant' ? ROUTES.MES_CANDIDATURES : ROUTES.MES_ANNONCES_CANDIDATURES(property.id);
   const backLabel = viewAs === 'tenant' ? '← Mes candidatures' : '← Demandes reçues';
 
   const formattedDate = request.created_at
@@ -217,7 +217,7 @@ const RequestDetailPage = () => {
               cancel.mutate(request.id, {
                 onSuccess: () => {
                   setCancelConfirm(false);
-                  navigate('/mes-candidatures');
+                  navigate(ROUTES.MES_CANDIDATURES);
                 },
               });
             }}

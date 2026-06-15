@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, Pencil, Trash2, Building2, Users } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, Building2, Users, BarChart2, Send } from 'lucide-react';
 import useMyProperties from '@/hooks/useMyProperties';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
@@ -11,7 +11,7 @@ import Modal from '@/components/ui/Modal';
 import Select from '@/components/ui/Select';
 import Alert from '@/components/ui/Alert';
 import { formatPrice, formatSurface } from '@/utils/formatters';
-import { ROUTES, PROPERTY_STATUSES } from '@/utils/constants';
+import { ROUTES, PROPERTY_STATUSES, OWNER_SETTABLE_STATUSES } from '@/utils/constants';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -23,11 +23,12 @@ const MyPropertiesPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [statusTarget, setStatusTarget] = useState(null);
+  const [submitTarget, setSubmitTarget] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [error, setError] = useState('');
 
   const { data, isLoading } = useMyProperties({ page, status: statusFilter || undefined });
-  const { deleteProperty, updatePropertyStatus } = usePropertyMutations();
+  const { deleteProperty, updatePropertyStatus, submitProperty } = usePropertyMutations();
 
   const properties = data?.data ?? [];
   const meta = data?.meta ?? {};
@@ -35,8 +36,8 @@ const MyPropertiesPage = () => {
 
   // KPIs
   const total = meta.total ?? properties.length;
-  const available = properties.filter((p) => p.status === 'disponible').length;
-  const pending = properties.filter((p) => !p.is_approved).length;
+  const available = properties.filter((p) => p.status === 'active').length;
+  const pending = properties.filter((p) => p.status === 'pending').length;
   const views = properties.reduce((sum, p) => sum + (p.views_count ?? 0), 0);
 
   const handleDelete = async () => {
@@ -58,6 +59,16 @@ const MyPropertiesPage = () => {
       setNewStatus('');
     } catch (e) {
       setError(e.userMessage || 'Erreur lors de la mise à jour du statut.');
+    }
+  };
+
+  const handleSubmit = async () => {
+    setError('');
+    try {
+      await submitProperty.mutateAsync(submitTarget.id);
+      setSubmitTarget(null);
+    } catch (e) {
+      setError(e.userMessage || 'Erreur lors de la soumission.');
     }
   };
 
@@ -94,8 +105,8 @@ const MyPropertiesPage = () => {
         </div>
 
         {/* Filter */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-48">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <div className="w-full sm:w-48">
             <Select
               options={STATUS_OPTIONS}
               value={statusFilter}
@@ -119,18 +130,16 @@ const MyPropertiesPage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {properties.map((property) => {
-              const thumb = property.images?.find((i) => i.is_primary) ?? property.images?.[0];
-              return (
+            {properties.map((property) => (
                 <div
                   key={property.id}
                   className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-4"
                 >
                   {/* Thumbnail */}
                   <div className="w-full sm:w-28 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                    {thumb ? (
+                    {property.thumbnail_url ? (
                       <img
-                        src={thumb.thumbnail_url || thumb.optimized_url}
+                        src={property.thumbnail_url}
                         alt={property.title}
                         className="w-full h-full object-cover"
                       />
@@ -145,14 +154,22 @@ const MyPropertiesPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap gap-2 mb-1">
                       <PropertyStatusBadge status={property.status} />
-                      <PropertyApprovalBadge isApproved={property.is_approved} />
+                      <PropertyApprovalBadge status={property.status} rejectionReason={property.rejection_reason} />
                     </div>
                     <h3 className="font-semibold text-gray-900 truncate">{property.title}</h3>
                     <p className="text-sm text-gray-500 mt-0.5">
                       {property.city}{property.neighborhood ? `, ${property.neighborhood}` : ''} •{' '}
                       {formatPrice(property.price)} • {formatSurface(property.surface)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">{property.views_count ?? 0} vue(s)</p>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <Eye className="h-3 w-3" />
+                      {property.views_count ?? 0} vue(s)
+                      {property.views_count > 0 && property.requests_count > 0 && (
+                        <span className="ml-2 text-blue-500">
+                          · {((property.requests_count / property.views_count) * 100).toFixed(1)}% conv.
+                        </span>
+                      )}
+                    </p>
                     {(property.requests_count > 0) && (
                       <Link
                         to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}
@@ -172,6 +189,11 @@ const MyPropertiesPage = () => {
                         <Eye className="h-4 w-4" /> Voir
                       </Button>
                     </Link>
+                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/stats`}>
+                      <Button variant="ghost" size="sm" className="flex items-center gap-1 text-purple-600 hover:text-purple-700">
+                        <BarChart2 className="h-4 w-4" /> Stats
+                      </Button>
+                    </Link>
                     <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}>
                       <Button variant="ghost" size="sm" className="flex items-center gap-1 text-blue-500 hover:text-blue-700">
                         <Users className="h-4 w-4" />
@@ -182,6 +204,17 @@ const MyPropertiesPage = () => {
                         <Pencil className="h-4 w-4" /> Modifier
                       </Button>
                     </Link>
+                    {(property.status === 'draft' || property.status === 'rejected') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => setSubmitTarget(property)}
+                      >
+                        <Send className="h-4 w-4" />
+                        {property.status === 'rejected' ? 'Resoumettre' : 'Soumettre'}
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -200,8 +233,7 @@ const MyPropertiesPage = () => {
                     </Button>
                   </div>
                 </div>
-              );
-            })}
+            ))}
           </div>
         )}
 
@@ -218,6 +250,35 @@ const MyPropertiesPage = () => {
           </div>
         )}
       </div>
+
+      {/* Submit modal */}
+      <Modal
+        isOpen={!!submitTarget}
+        onClose={() => setSubmitTarget(null)}
+        title={submitTarget?.status === 'rejected' ? "Resoumettre pour validation" : "Soumettre pour validation"}
+      >
+        <p className="text-sm text-gray-600 mb-6">
+          {submitTarget?.status === 'rejected'
+            ? <>Resoumettre <strong>{submitTarget?.title}</strong> après correction ? L'administrateur la réexaminera.</>
+            : <>Soumettre <strong>{submitTarget?.title}</strong> pour validation par l'administrateur ? Elle sera visible publiquement une fois approuvée.</>
+          }
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setSubmitTarget(null)}>Annuler</Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={submitProperty.isPending}
+            className="flex items-center gap-2"
+          >
+            <Send className="h-4 w-4" />
+            {submitProperty.isPending
+              ? (submitTarget?.status === 'rejected' ? 'Resoumission...' : 'Soumission...')
+              : (submitTarget?.status === 'rejected' ? 'Resoumettre' : 'Soumettre')
+            }
+          </Button>
+        </div>
+      </Modal>
 
       {/* Delete modal */}
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Supprimer l'annonce">
@@ -239,7 +300,7 @@ const MyPropertiesPage = () => {
         </p>
         <Select
           label="Nouveau statut"
-          options={PROPERTY_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
+          options={OWNER_SETTABLE_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
           value={newStatus}
           onChange={(e) => setNewStatus(e.target.value)}
         />

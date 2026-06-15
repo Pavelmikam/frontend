@@ -27,7 +27,7 @@ const SearchSortBar = ({ total, sort, onSortChange, isFetching, viewMode, onView
 
       <div className="flex items-center gap-3">
         {/* Sort */}
-        <div className="w-44">
+        <div className="w-32 sm:w-44">
           <Select
             options={SORT_OPTIONS}
             value={sort || ''}

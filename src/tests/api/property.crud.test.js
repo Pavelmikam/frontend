@@ -51,8 +51,8 @@ describe('property.api — CRUD', () => {
 
   describe('updatePropertyStatus()', () => {
     it('updates status and returns updated property', async () => {
-      const result = await updatePropertyStatus(1, 'loue');
-      expect(result.status).toBe('loue');
+      const result = await updatePropertyStatus(1, 'archived');
+      expect(result.status).toBe('archived');
     });
   });
 

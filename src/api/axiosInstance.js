@@ -4,7 +4,6 @@ import { getToken, removeToken } from '@/utils/tokenUtils';
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   timeout: 15000,
@@ -27,6 +26,12 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     const originalRequest = error.config;
+
+    // Erreur réseau (ECONNRESET, serveur éteint, timeout)
+    if (!error.response) {
+      error.userMessage = 'Impossible de joindre le serveur. Vérifiez votre connexion.';
+      return Promise.reject(error);
+    }
 
     if (status === 419 && !originalRequest._csrfRetry) {
       originalRequest._csrfRetry = true;

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createProperty, updateProperty, deleteProperty,
-  updatePropertyStatus, moderateProperty,
+  updatePropertyStatus, moderateProperty, submitProperty, archiveProperty,
 } from '@/api/property.api';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,6 @@ export const usePropertyMutations = () => {
   const createMutation = useMutation({
     mutationFn: ({ data, images }) => createProperty(data, images),
     onSuccess: () => {
-      toast.success("Annonce créée. En attente de validation par l'administrateur.");
       invalidate();
     },
     onError: (error) => {
@@ -71,11 +70,37 @@ export const usePropertyMutations = () => {
     },
   });
 
+  const submitMutation = useMutation({
+    mutationFn: (id) => submitProperty(id),
+    onSuccess: (_, id) => {
+      toast.success("Annonce soumise à la modération.");
+      queryClient.invalidateQueries({ queryKey: ['property', id] });
+      invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.userMessage || "Erreur lors de la soumission.");
+    },
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: (id) => archiveProperty(id),
+    onSuccess: (_, id) => {
+      toast.success("Annonce archivée.");
+      queryClient.invalidateQueries({ queryKey: ['property', id] });
+      invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.userMessage || "Erreur lors de l'archivage.");
+    },
+  });
+
   return {
     createProperty:       createMutation,
     updateProperty:       updateMutation,
     deleteProperty:       deleteMutation,
     updatePropertyStatus: statusMutation,
     moderateProperty:     moderateMutation,
+    submitProperty:       submitMutation,
+    archiveProperty:      archiveMutation,
   };
 };

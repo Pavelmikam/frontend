@@ -35,6 +35,23 @@ import SavedSearchResultsPage  from '@/pages/search/SavedSearchResultsPage';
 import MyRequestsPage       from '@/pages/locataire/MyRequestsPage';
 import RequestDetailPage    from '@/pages/locataire/RequestDetailPage';
 import PropertyRequestsPage from '@/pages/proprietaire/PropertyRequestsPage';
+import MessagingPage        from '@/pages/messaging/MessagingPage';
+import ConversationPage     from '@/pages/messaging/ConversationPage';
+import NotificationsPage           from '@/pages/notifications/NotificationsPage';
+import NotificationPreferencesPage from '@/pages/profile/NotificationPreferencesPage';
+import AdminDashboardPage     from '@/pages/admin/AdminDashboardPage';
+import AdminUsersPage         from '@/pages/admin/AdminUsersPage';
+import AdminUserDetailPage    from '@/pages/admin/AdminUserDetailPage';
+import AdminReportsPage       from '@/pages/admin/AdminReportsPage';
+import AdminCategoriesPage    from '@/pages/admin/AdminCategoriesPage';
+import AdminLogsPage          from '@/pages/admin/AdminLogsPage';
+import AdminNeighborhoodPage  from '@/pages/admin/AdminNeighborhoodPage';
+import NeighborhoodPage       from '@/pages/neighborhood/NeighborhoodPage';
+import ContributorProfilePage from '@/pages/neighborhood/ContributorProfilePage';
+import PropertyStatsPage      from '@/pages/proprietaire/PropertyStatsPage';
+import PopularPropertiesPage  from '@/pages/properties/PopularPropertiesPage';
+import AdminStatisticsPage    from '@/pages/admin/AdminStatisticsPage';
+import AdminExportPage        from '@/pages/admin/AdminExportPage';
 
 import useAuthStore from '@/store/authStore';
 import { ROUTES } from '@/utils/constants';
@@ -51,7 +68,7 @@ const RootLayout = () => {
   useEffect(() => {
     const handleUnauthorized = () => {
       logoutAction();
-      navigate(ROUTES.LOGIN, { replace: true });
+      navigate(ROUTES.HOME, { replace: true });
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
@@ -60,9 +77,11 @@ const RootLayout = () => {
   return <Outlet />;
 };
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+[
   {
     element: <RootLayout />,
+
     children: [
       /* ── Home page (visiteurs) ── */
       {
@@ -94,8 +113,10 @@ const router = createBrowserRouter([
       {
         element: <PrivateLayout />,
         children: [
-          { path: '/annonces',     element: <PublicListingPage /> },
-          { path: '/annonces/:id', element: <PropertyDetailPage /> },
+          { path: '/annonces',              element: <PublicListingPage /> },
+          { path: '/annonces/:id',          element: <PropertyDetailPage /> },
+          { path: '/annonces/populaires',   element: <PopularPropertiesPage /> },
+          { path: '/score-quartier',        element: <NeighborhoodPage /> },
         ],
       },
 
@@ -113,6 +134,11 @@ const router = createBrowserRouter([
               { path: '/mes-recherches/:id/resultats', element: <SavedSearchResultsPage /> },
               { path: '/mes-candidatures',             element: <MyRequestsPage /> },
               { path: '/candidatures/:id',             element: <RequestDetailPage /> },
+              { path: '/messagerie',                   element: <MessagingPage /> },
+              { path: '/messagerie/:id',               element: <ConversationPage /> },
+              { path: '/notifications',                element: <NotificationsPage /> },
+              { path: '/profil/notifications',         element: <NotificationPreferencesPage /> },
+              { path: '/mon-profil-contributeur',      element: <ContributorProfilePage /> },
             ],
           },
         ],
@@ -129,6 +155,7 @@ const router = createBrowserRouter([
               { path: '/mes-annonces/creer',                  element: <CreatePropertyPage /> },
               { path: '/mes-annonces/:id/modifier',           element: <EditPropertyPage /> },
               { path: '/mes-annonces/:id/candidatures',       element: <PropertyRequestsPage /> },
+              { path: '/mes-annonces/:id/stats',              element: <PropertyStatsPage /> },
             ],
           },
         ],
@@ -141,7 +168,16 @@ const router = createBrowserRouter([
           {
             element: <PrivateLayout />,
             children: [
-              { path: '/admin/moderation', element: <PendingPropertiesPage /> },
+              { path: '/admin/moderation',          element: <PendingPropertiesPage /> },
+              { path: '/admin',                      element: <AdminDashboardPage /> },
+              { path: '/admin/utilisateurs',         element: <AdminUsersPage /> },
+              { path: '/admin/utilisateurs/:id',     element: <AdminUserDetailPage /> },
+              { path: '/admin/signalements',         element: <AdminReportsPage /> },
+              { path: '/admin/categories',           element: <AdminCategoriesPage /> },
+              { path: '/admin/journal',              element: <AdminLogsPage /> },
+              { path: '/admin/quartiers',            element: <AdminNeighborhoodPage /> },
+              { path: '/admin/statistiques',         element: <AdminStatisticsPage /> },
+              { path: '/admin/exports',              element: <AdminExportPage /> },
             ],
           },
         ],
@@ -150,8 +186,16 @@ const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-]);
+],
+{
+  future: {
+    v7_relativeSplatPath: true,
+    v7_startTransition: true,
+  },
+});
 
-const AppRouter = () => <RouterProvider router={router} />;
+const AppRouter = () => (
+  <RouterProvider router={router} future={{ v7_startTransition: true }} />
+);
 
 export default AppRouter;

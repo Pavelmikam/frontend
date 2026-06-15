@@ -1,39 +1,54 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, BedDouble, Maximize2, Building2, ArrowLeft,
   Eye, Heart, Calendar, Phone, Mail, ChevronLeft, ChevronRight,
-  Pencil, Trash2, Send, AlertCircle
+  Pencil, Trash2, Send, AlertCircle, MessageSquare
 } from 'lucide-react';
 import useProperty from '@/hooks/useProperty';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import { useRentalRequests } from '@/hooks/useRentalRequests';
+import { usePropertyNeighborhoodScore } from '@/hooks/useNeighborhoodScore';
 import useAuth from '@/hooks/useAuth';
-import useAuthStore from '@/store/authStore';
+import StartConversationModal from '@/components/messaging/StartConversationModal';
 import PropertyLocationMap from '@/components/property/PropertyLocationMap';
 import PropertyAmenitiesGrid from '@/components/property/PropertyAmenitiesGrid';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
 import PropertyApprovalBadge from '@/components/ui/PropertyApprovalBadge';
 import FavoriteButton from '@/components/ui/FavoriteButton';
 import ApplyModal from '@/components/rental/ApplyModal';
+import ReportButton from '@/components/admin/ReportButton';
+import NeighborhoodScoreCard from '@/components/neighborhood/NeighborhoodScoreCard';
+import NeighborhoodReportModal from '@/components/neighborhood/NeighborhoodReportModal';
+import NeighborhoodHistoryChart from '@/components/neighborhood/NeighborhoodHistoryChart';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
 import { formatPrice, formatSurface, formatRooms, getPropertyTypeLabel } from '@/utils/formatters';
-import { ROUTES } from '@/utils/constants';
+import { ROUTES, NEIGHBORHOOD_CRITERIA } from '@/utils/constants';
 
 const PropertyDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, isLocataire, isEmailVerified } = useAuth();
   const { data: property, isLoading, isError } = useProperty(id);
-  const { deleteProperty } = usePropertyMutations();
+  const { deleteProperty, submitProperty } = usePropertyMutations();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
 
   const isOwner = isAuthenticated && user?.id === property?.owner?.id;
   const isAdmin = isAuthenticated && user?.role === 'admin';
+
+  const hasCoords = !!(property?.latitude && property?.longitude);
+  const { data: scoreData, isLoading: scoreLoading } = usePropertyNeighborhoodScore(
+    hasCoords ? property?.id : null
+  );
+  const neighborhoodScore = scoreData?.data ?? null;
+  const [showEvalModal, setShowEvalModal] = useState(false);
+  const [historyCriterion, setHistoryCriterion] = useState(NEIGHBORHOOD_CRITERIA[0].value);
 
   // Load user requests to check if one already exists for this property
   const { data: myRequestsData } = useRentalRequests(
@@ -83,7 +98,7 @@ const PropertyDetailPage = () => {
     ? new Date(property.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
     : null;
 
-  const isPropertyAvailable = ['disponible', 'active'].includes(property.status);
+  const isPropertyAvailable = property.status === 'active';
 
   const renderApplySection = () => {
     if (!isAuthenticated || isOwner || isAdmin || !isLocataire) return null;
@@ -116,7 +131,7 @@ const PropertyDetailPage = () => {
               <span>Candidature envoyée</span>
             </div>
             <Link
-              to={`/candidatures/${existingRequest.id}`}
+              to={ROUTES.CANDIDATURE(existingRequest.id)}
               className="block text-center text-sm text-blue-600 hover:underline"
             >
               Voir ma candidature →
@@ -147,6 +162,41 @@ const PropertyDetailPage = () => {
           <ArrowLeft className="h-4 w-4" />
           Retour aux annonces
         </Link>
+
+        {/* Rejection banner — only visible to owner */}
+        {isOwner && property.status === 'rejected' && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-red-800">Annonce refusée par l'administrateur</p>
+                {property.rejection_reason && (
+                  <p className="text-sm text-red-700 mt-1">{property.rejection_reason}</p>
+                )}
+                <p className="text-xs text-red-600 mt-2">
+                  Modifiez votre annonce puis ressoumettez-la pour qu'elle soit de nouveau examinée.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Link to={ROUTES.MES_ANNONCES_MODIFIER(property.id)}>
+                <Button variant="outline" size="sm" className="flex items-center gap-1.5 text-red-700 border-red-300 hover:bg-red-50">
+                  <Pencil className="h-3.5 w-3.5" />
+                  Corriger l'annonce
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1.5 text-green-700 hover:bg-green-50"
+                onClick={() => setShowResubmitModal(true)}
+              >
+                <Send className="h-3.5 w-3.5" />
+                Resoumettre
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column */}
@@ -214,7 +264,7 @@ const PropertyDetailPage = () => {
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
                 <PropertyStatusBadge status={property.status} />
-                <PropertyApprovalBadge isApproved={property.is_approved} rejectionReason={property.rejection_reason} />
+                <PropertyApprovalBadge status={property.status} rejectionReason={property.rejection_reason} />
               </div>
               <div className="flex items-start justify-between gap-3">
                 <h1 className="text-2xl font-bold text-gray-900 flex-1">{property.title}</h1>
@@ -273,10 +323,10 @@ const PropertyDetailPage = () => {
                     <dd className="font-medium text-gray-800">{property.floor === 0 ? 'RDC' : `${property.floor}e`}</dd>
                   </>
                 )}
-                {property.deposit != null && (
+                {property.deposit_amount != null && (
                   <>
                     <dt className="text-gray-500">Caution</dt>
-                    <dd className="font-medium text-gray-800">{formatPrice(property.deposit)}</dd>
+                    <dd className="font-medium text-gray-800">{formatPrice(property.deposit_amount)}</dd>
                   </>
                 )}
                 {property.available_from && (
@@ -308,13 +358,13 @@ const PropertyDetailPage = () => {
             )}
 
             {/* Rules */}
-            {(property.allow_pets || property.allow_smoking || property.allow_children) && (
+            {(property.accepts_animals || property.accepts_smokers || property.accepts_students) && (
               <div className="bg-white rounded-xl p-6 border border-gray-200">
                 <h2 className="text-base font-semibold text-gray-900 mb-3">Règles</h2>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  {property.allow_pets && <li>✅ Animaux acceptés</li>}
-                  {property.allow_smoking && <li>✅ Fumeurs acceptés</li>}
-                  {property.allow_children && <li>✅ Enfants bienvenus</li>}
+                  {property.accepts_animals && <li>✅ Animaux acceptés</li>}
+                  {property.accepts_smokers && <li>✅ Fumeurs acceptés</li>}
+                  {property.accepts_students && <li>✅ Étudiants acceptés</li>}
                 </ul>
               </div>
             )}
@@ -331,6 +381,48 @@ const PropertyDetailPage = () => {
                 />
               </div>
             )}
+
+            {/* Score de quartier */}
+            <div className="bg-white rounded-xl p-6 border border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Score de quartier</h2>
+              {hasCoords ? (
+                <>
+                  <NeighborhoodScoreCard
+                    score={neighborhoodScore}
+                    isLoading={scoreLoading}
+                    onEvaluate={isAuthenticated ? () => setShowEvalModal(true) : undefined}
+                  />
+                  {!scoreLoading && (
+                    <div className="mt-5 pt-5 border-t border-gray-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <p className="text-sm font-medium text-gray-700">Historique</p>
+                        <select
+                          value={historyCriterion}
+                          onChange={(e) => setHistoryCriterion(e.target.value)}
+                          className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {NEIGHBORHOOD_CRITERIA.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.icon} {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <NeighborhoodHistoryChart
+                        city={property.city}
+                        neighborhood={property.neighborhood}
+                        criterion={historyCriterion}
+                        isVisible
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  Localisation non renseignée — score de quartier indisponible.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Right column */}
@@ -350,17 +442,41 @@ const PropertyDetailPage = () => {
               {/* Apply section for tenant */}
               {renderApplySection()}
 
+              {/* Report button (discret) */}
+              {isAuthenticated && !isOwner && (
+                <div className="mt-2 flex justify-end">
+                  <ReportButton
+                    type="property"
+                    targetId={property.id}
+                    ownerId={property.owner?.id}
+                  />
+                </div>
+              )}
+
+              {/* Contact button for tenant (visible for all logged-in locataires) */}
+              {isLocataire && !isOwner && isEmailVerified && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Contacter le propriétaire
+                  </button>
+                </div>
+              )}
+
               {/* Owner info */}
               {property.owner && (
                 <div className="mt-5 pt-5 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Propriétaire</p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm flex-shrink-0">
-                      {property.owner.first_name?.[0]}{property.owner.last_name?.[0]}
+                      {property.owner.name?.[0]?.toUpperCase()}
                     </div>
                     <div>
                       <p className="font-medium text-gray-800 text-sm">
-                        {property.owner.first_name} {property.owner.last_name}
+                        {property.owner.name}
                       </p>
                       {property.owner.phone && (
                         <a href={`tel:${property.owner.phone}`} className="flex items-center gap-1 text-xs text-blue-600 hover:underline mt-0.5">
@@ -386,7 +502,7 @@ const PropertyDetailPage = () => {
               {(isOwner || isAdmin) && (
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                   {isOwner && (
-                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/modifier`}>
+                    <Link to={ROUTES.MES_ANNONCES_MODIFIER(property.id)}>
                       <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                         <Pencil className="h-4 w-4" />
                         Modifier
@@ -431,10 +547,46 @@ const PropertyDetailPage = () => {
         </div>
       </Modal>
 
+      {/* Re-submit modal */}
+      <Modal isOpen={showResubmitModal} onClose={() => setShowResubmitModal(false)} title="Resoumettre l'annonce">
+        <p className="text-sm text-gray-600 mb-6">
+          Resoumettre <strong>{property.title}</strong> pour une nouvelle vérification par l'administrateur ?
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setShowResubmitModal(false)}>Annuler</Button>
+          <Button
+            variant="primary"
+            disabled={submitProperty.isPending}
+            onClick={async () => {
+              await submitProperty.mutateAsync(property.id);
+              setShowResubmitModal(false);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Send className="h-4 w-4" />
+            {submitProperty.isPending ? 'Soumission...' : 'Resoumettre'}
+          </Button>
+        </div>
+      </Modal>
+
       {/* Apply modal */}
       <ApplyModal
         isOpen={showApplyModal}
         onClose={() => setShowApplyModal(false)}
+        property={property}
+      />
+
+      {/* Contact modal */}
+      <StartConversationModal
+        isOpen={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        property={property}
+      />
+
+      {/* Évaluation de quartier */}
+      <NeighborhoodReportModal
+        isOpen={showEvalModal}
+        onClose={() => setShowEvalModal(false)}
         property={property}
       />
     </div>

@@ -1,4 +1,5 @@
-import { Building2, CheckCircle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import RentalStatusBadge from '@/components/ui/RentalStatusBadge';
@@ -7,6 +8,7 @@ import Avatar from '@/components/ui/Avatar';
 import { formatPrice } from '@/utils/formatters';
 
 const RentalRequestCard = ({ request, viewAs = 'tenant', onDecide, onCancel, onClick }) => {
+  const navigate = useNavigate();
   const property = request.property ?? {};
   const tenant = request.tenant ?? {};
 
@@ -19,6 +21,15 @@ const RentalRequestCard = ({ request, viewAs = 'tenant', onDecide, onCancel, onC
       ? request.message.slice(0, 100) + '…'
       : request.message
     : null;
+
+  const handleMessage = (e) => {
+    e.stopPropagation();
+    if (request.conversation_id) {
+      navigate(`/messagerie/${request.conversation_id}`);
+    } else if (property.id) {
+      navigate(`/messagerie?start=${property.id}`);
+    }
+  };
 
   return (
     <div
@@ -91,6 +102,15 @@ const RentalRequestCard = ({ request, viewAs = 'tenant', onDecide, onCancel, onC
             >
               Voir ma demande
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-1"
+              onClick={handleMessage}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Message
+            </Button>
             {request.status === 'en_attente' && (
               <Button
                 variant="ghost"
@@ -104,24 +124,37 @@ const RentalRequestCard = ({ request, viewAs = 'tenant', onDecide, onCancel, onC
           </>
         )}
 
-        {viewAs === 'owner' && request.status === 'en_attente' && (
+        {viewAs === 'owner' && (
           <>
             <Button
-              variant="primary"
+              variant="ghost"
               size="sm"
-              className="whitespace-nowrap"
-              onClick={() => onDecide?.(request.id, 'accept')}
+              className="text-gray-600 hover:text-blue-600 whitespace-nowrap flex items-center gap-1"
+              onClick={handleMessage}
             >
-              Accepter
+              <MessageSquare className="h-3.5 w-3.5" />
+              Message
             </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              className="whitespace-nowrap"
-              onClick={() => onDecide?.(request.id, 'refuse')}
-            >
-              Refuser
-            </Button>
+            {request.status === 'en_attente' && (
+              <>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="whitespace-nowrap"
+                  onClick={() => onDecide?.(request.id, 'accept')}
+                >
+                  Accepter
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="whitespace-nowrap"
+                  onClick={() => onDecide?.(request.id, 'refuse')}
+                >
+                  Refuser
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>

@@ -223,6 +223,7 @@ const SearchFiltersPanel = ({ filters, onUpdate, onReset, isLoading, activeFilte
           <label className="block text-xs text-gray-500 mb-1">Disponible à partir du</label>
           <input
             type="date"
+            lang="fr-FR"
             min={today}
             value={filters.available_from || ''}
             onChange={(e) => onUpdate({ available_from: e.target.value || null })}

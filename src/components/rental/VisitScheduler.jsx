@@ -22,7 +22,9 @@ const VisitScheduler = ({ request, viewAs, onSchedule, onConfirm }) => {
     if (!dateValue) return;
     setIsSubmitting(true);
     try {
-      await onSchedule?.(dateValue);
+      // datetime-local gives "YYYY-MM-DDTHH:MM" — add seconds for Laravel validation
+      const formatted = dateValue.length === 16 ? dateValue + ':00' : dateValue;
+      await onSchedule?.(formatted);
       setDateValue('');
     } finally {
       setIsSubmitting(false);
@@ -55,6 +57,7 @@ const VisitScheduler = ({ request, viewAs, onSchedule, onConfirm }) => {
           <div className="flex gap-3">
             <input
               type="datetime-local"
+              lang="fr-FR"
               min={minDateTime}
               value={dateValue}
               onChange={(e) => setDateValue(e.target.value)}

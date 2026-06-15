@@ -3,7 +3,12 @@ import { MemoryRouter } from 'react-router-dom';
 import { useSearchFilters } from '@/hooks/useSearchFilters';
 
 const wrapper = ({ children }) => (
-  <MemoryRouter initialEntries={['/annonces']}>{children}</MemoryRouter>
+  <MemoryRouter
+    initialEntries={['/annonces']}
+    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+  >
+    {children}
+  </MemoryRouter>
 );
 
 describe('useSearchFilters', () => {

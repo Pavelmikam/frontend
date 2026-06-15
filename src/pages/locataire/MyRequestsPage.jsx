@@ -87,7 +87,7 @@ const MyRequestsPage = () => {
                 key={req.id}
                 request={req}
                 viewAs="tenant"
-                onClick={(id) => navigate(`/candidatures/${id}`)}
+                onClick={(id) => navigate(ROUTES.CANDIDATURE(id))}
                 onCancel={(id) => cancel.mutate(id)}
               />
             ))}

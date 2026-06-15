@@ -3,6 +3,7 @@ import Spinner from './Spinner';
 const variantClasses = {
   primary:   'bg-blue-600 hover:bg-blue-700 text-white border-transparent',
   secondary: 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300',
+  outline:   'bg-white hover:bg-gray-50 text-gray-700 border-gray-300',
   danger:    'bg-red-600 hover:bg-red-700 text-white border-transparent',
   ghost:     'bg-transparent hover:bg-gray-100 text-gray-700 border-transparent',
 };

@@ -49,7 +49,7 @@ export const getPropertyTypeLabel = (type) => {
 
 export const getStatusInfo = (status) => {
   const found = PROPERTY_STATUSES.find((s) => s.value === status);
-  return found || { label: status, color: 'gray' };
+  return found || { label: status ?? '—', color: 'gray' };
 };
 
 // ── Phase 3 formatters ────────────────────────────────────────────────────────

@@ -15,10 +15,15 @@ const ApplyModal = ({ isOpen, onClose, property }) => {
 
   const handleSubmit = async () => {
     setApiError('');
+    const trimmed = message.trim();
+    if (trimmed && trimmed.length < 10) {
+      setApiError('Votre message doit contenir au moins 10 caractères.');
+      return;
+    }
     try {
       const result = await create.mutateAsync({
         propertyId: property.id,
-        data: { message: message.trim() || undefined },
+        data: { message: trimmed || undefined },
       });
       const newId = result?.data?.id ?? result?.id;
       onClose();

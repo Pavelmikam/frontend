@@ -61,8 +61,7 @@ export const uploadDocument = async (rentalRequestId, file, type, description = 
 
   const response = await axiosInstance.post(
     API_ROUTES.RENTAL_REQUEST_DOCUMENTS(rentalRequestId),
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+    formData
   );
   return response.data;
 };

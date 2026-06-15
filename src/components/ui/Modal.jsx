@@ -22,7 +22,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
     >
-      <div className={`bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}>
+      <div className={`bg-white rounded-xl shadow-xl w-[calc(100%-32px)] ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-6 border-b">
           {title && <h2 className="text-lg font-semibold text-gray-900">{title}</h2>}
           <button

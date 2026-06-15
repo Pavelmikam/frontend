@@ -15,9 +15,9 @@ import { formatPrice } from '@/utils/formatters';
 
 // ── Schémas Zod par étape ─────────────────────────────────
 const step1Schema = z.object({
-  title:       z.string().min(5, 'Minimum 5 caractères').max(150),
+  title:       z.string().min(10, 'Minimum 10 caractères').max(200),
   type:        z.enum(PROPERTY_TYPES.map((t) => t.value), { message: 'Type requis' }),
-  description: z.string().min(20, 'Minimum 20 caractères').max(5000),
+  description: z.string().min(50, 'Minimum 50 caractères').max(5000),
 });
 
 const step2Schema = z.object({
@@ -134,7 +134,7 @@ const Step3 = ({ form }) => {
         <Input label="Caution (FCFA)" name="deposit_amount" type="number" placeholder="300 000" register={register} error={errors.deposit_amount?.message} />
         <Input label="Durée minimale (mois)" name="min_rental_months" type="number" placeholder="6" register={register} error={errors.min_rental_months?.message} />
       </div>
-      <Input label="Disponible à partir du" name="available_from" type="date" register={register} error={errors.available_from?.message} />
+      <Input label="Disponible à partir du" name="available_from" type="date" lang="fr-FR" register={register} error={errors.available_from?.message} />
     </div>
   );
 };
@@ -237,6 +237,7 @@ const Step5 = ({ images, setImages, existingImages, imageManager }) => (
       </p>
       <ImageDropzone
         onFilesAdded={setImages}
+        initialFiles={images}
         maxFiles={10}
         currentCount={existingImages?.length || 0}
       />
@@ -311,7 +312,13 @@ const PropertyFormSteps = ({
   });
 
   const handleNext = async () => {
-    if (currentStep >= 4) {
+    if (currentStep === 4) {
+      // Photos step — require at least one photo before proceeding
+      if (existingImages.length === 0 && images.length === 0) return;
+      setCurrentStep((s) => s + 1);
+      return;
+    }
+    if (currentStep > 4) {
       setCurrentStep((s) => s + 1);
       return;
     }
@@ -328,11 +335,14 @@ const PropertyFormSteps = ({
     setCurrentStep((s) => s - 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const allData = { ...formData, ...form.getValues() };
-    // Validate at least 1 image
     if (existingImages.length === 0 && images.length === 0) return;
-    onSubmit(allData, images);
+    try {
+      await onSubmit({ data: allData, images });
+    } catch {
+      // L'erreur est affichée par la page parente (CreatePropertyPage / EditPropertyPage)
+    }
   };
 
   return (

@@ -21,11 +21,14 @@ const EditPropertyPage = () => {
   const handleSubmit = async ({ data, images: newImages }) => {
     setError('');
     try {
-      await updateProperty.mutateAsync({ id, data, newImages });
+      const property = await updateProperty.mutateAsync({ id, data, newImages });
+      if (property._imageUploadFailed) {
+        setError("Annonce mise à jour, mais les nouvelles photos n'ont pas pu être uploadées.");
+        return;
+      }
       navigate(`${ROUTES.ANNONCES}/${id}`);
     } catch (e) {
       setError(e.userMessage || 'Erreur lors de la mise à jour.');
-      throw e;
     }
   };
 
@@ -61,13 +64,14 @@ const EditPropertyPage = () => {
     surface: property.surface?.toString() ?? '',
     rooms: property.rooms?.toString() ?? '',
     floor: property.floor?.toString() ?? '',
-    deposit: property.deposit?.toString() ?? '',
+    deposit_amount: property.deposit_amount?.toString() ?? '',
     available_from: property.available_from ?? '',
+    min_rental_months: property.min_rental_months?.toString() ?? '',
     amenities: property.amenities ?? [],
     charges_included: property.charges_included ?? [],
-    allow_pets: property.allow_pets ?? false,
-    allow_smoking: property.allow_smoking ?? false,
-    allow_children: property.allow_children ?? false,
+    accepts_animals: property.accepts_animals ?? false,
+    accepts_smokers: property.accepts_smokers ?? false,
+    accepts_students: property.accepts_students ?? true,
   };
 
   return (
@@ -105,10 +109,10 @@ const EditPropertyPage = () => {
         )}
 
         <PropertyFormSteps
-          defaultValues={defaultValues}
+          initialData={defaultValues}
           onSubmit={handleSubmit}
-          isSubmitting={updateProperty.isPending}
-          isEdit
+          isLoading={updateProperty.isPending}
+          existingImages={property.images ?? []}
         />
       </div>
     </div>
