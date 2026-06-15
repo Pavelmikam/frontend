@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, BedDouble, Maximize2, Building2, ArrowLeft,
   Eye, Heart, Calendar, Phone, Mail, ChevronLeft, ChevronRight,
-  Pencil, Trash2, Send, AlertCircle, MessageSquare
+  Pencil, Trash2, Send, AlertCircle, MessageSquare, Lock, CheckCircle
 } from 'lucide-react';
 import useProperty from '@/hooks/useProperty';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
@@ -99,6 +99,7 @@ const PropertyDetailPage = () => {
     : null;
 
   const isPropertyAvailable = property.status === 'active';
+  const isPropertyUnavailable = property.status === 'sous_reservation' || property.status === 'loue';
 
   const renderApplySection = () => {
     if (!isAuthenticated || isOwner || isAdmin || !isLocataire) return null;
@@ -162,6 +163,36 @@ const PropertyDetailPage = () => {
           <ArrowLeft className="h-4 w-4" />
           Retour aux annonces
         </Link>
+
+        {/* Unavailability banner — visible to all except owner */}
+        {!isOwner && isPropertyUnavailable && (
+          <div className={`mb-6 rounded-xl p-4 border ${
+            property.status === 'loue'
+              ? 'bg-blue-50 border-blue-200'
+              : 'bg-orange-50 border-orange-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              {property.status === 'loue'
+                ? <CheckCircle className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                : <Lock className="h-5 w-5 text-orange-500 flex-shrink-0" />
+              }
+              <div>
+                <p className={`text-sm font-semibold ${property.status === 'loue' ? 'text-blue-800' : 'text-orange-800'}`}>
+                  {property.status === 'loue'
+                    ? 'Ce bien est loué'
+                    : 'Ce bien est actuellement sous réservation'
+                  }
+                </p>
+                <p className={`text-xs mt-0.5 ${property.status === 'loue' ? 'text-blue-600' : 'text-orange-600'}`}>
+                  {property.status === 'loue'
+                    ? 'Une location est en cours. Ce bien n\'est plus disponible à la réservation.'
+                    : 'Des négociations sont en cours. Le bien peut redevenir disponible si elles n\'aboutissent pas.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Rejection banner — only visible to owner */}
         {isOwner && property.status === 'rejected' && (

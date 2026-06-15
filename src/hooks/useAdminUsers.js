@@ -3,12 +3,17 @@ import { getAdminUsers, getAdminUser, suspendUser, activateUser, deleteAdminUser
 import useAuth from './useAuth';
 import toast from 'react-hot-toast';
 
-const toApiParams = ({ status, ...rest }) => ({
-  ...rest,
-  ...(status === 'active'    && { is_active: true }),
-  ...(status === 'suspended' && { is_active: false }),
-  ...(status === 'deleted'   && { deleted: 1 }),
-});
+const toApiParams = ({ status, ...rest }) => {
+  const filtered = Object.fromEntries(
+    Object.entries(rest).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+  );
+  return {
+    ...filtered,
+    ...(status === 'active'    && { is_active: true }),
+    ...(status === 'suspended' && { is_active: false }),
+    ...(status === 'deleted'   && { deleted: 1 }),
+  };
+};
 
 export const useAdminUsers = (params = {}) => {
   const { isAdmin } = useAuth();

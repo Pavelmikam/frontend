@@ -7,7 +7,8 @@ import { formatPrice, formatSurface, formatRooms, getPropertyTypeLabel } from '@
 const PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" fill="%23f3f4f6"><rect width="240" height="160"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-size="12" font-family="sans-serif">Aucune photo</text></svg>';
 
 const PropertyCardList = ({ property }) => {
-  const thumbnail = property.images?.[0]?.thumbnail_url
+  const thumbnail = property.thumbnail_url
+    || property.images?.[0]?.thumbnail_url
     || property.primary_image?.thumbnail_url
     || null;
 

@@ -182,12 +182,16 @@ export const PROPERTY_STATUSES = [
   { value: 'active',           label: 'Disponible',       color: 'green'  },
   { value: 'rejected',         label: 'Refusé',           color: 'red'    },
   { value: 'archived',         label: 'Archivé',          color: 'gray'   },
-  { value: 'sous_reservation', label: 'Sous réservation', color: 'yellow' },
+  { value: 'sous_reservation', label: 'Sous réservation', color: 'orange' },
+  { value: 'loue',             label: 'Loué',             color: 'blue'   },
 ];
 
 // Statuts que le propriétaire peut définir manuellement (via PATCH /status)
+// Transitions : active → sous_reservation | loue | archived
+//               sous_reservation → active | loue | archived
+//               loue → active | archived
 export const OWNER_SETTABLE_STATUSES = PROPERTY_STATUSES.filter(
-  (s) => ['draft', 'archived', 'sous_reservation'].includes(s.value)
+  (s) => ['active', 'archived', 'sous_reservation', 'loue'].includes(s.value)
 );
 
 export const AMENITIES = [

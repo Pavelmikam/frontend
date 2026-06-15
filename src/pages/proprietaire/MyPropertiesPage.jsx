@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, Pencil, Trash2, Building2, Users, BarChart2, Send } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, Building2, Users, BarChart2, Send, Lock, Unlock, CheckCircle } from 'lucide-react';
 import useMyProperties from '@/hooks/useMyProperties';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
 import PropertyApprovalBadge from '@/components/ui/PropertyApprovalBadge';
 import Button from '@/components/ui/Button';
+import Select from '@/components/ui/Select';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
-import Select from '@/components/ui/Select';
 import Alert from '@/components/ui/Alert';
 import { formatPrice, formatSurface } from '@/utils/formatters';
-import { ROUTES, PROPERTY_STATUSES, OWNER_SETTABLE_STATUSES } from '@/utils/constants';
+import { ROUTES, PROPERTY_STATUSES } from '@/utils/constants';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -22,9 +22,8 @@ const MyPropertiesPage = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [statusTarget, setStatusTarget] = useState(null);
   const [submitTarget, setSubmitTarget] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
+  const [statusTarget, setStatusTarget] = useState(null); // { property, toStatus }
   const [error, setError] = useState('');
 
   const { data, isLoading } = useMyProperties({ page, status: statusFilter || undefined });
@@ -51,15 +50,28 @@ const MyPropertiesPage = () => {
   };
 
   const handleStatusChange = async () => {
-    if (!newStatus) return;
+    if (!statusTarget) return;
     setError('');
     try {
-      await updatePropertyStatus.mutateAsync({ id: statusTarget.id, status: newStatus });
+      await updatePropertyStatus.mutateAsync({ id: statusTarget.property.id, status: statusTarget.toStatus });
       setStatusTarget(null);
-      setNewStatus('');
     } catch (e) {
       setError(e.userMessage || 'Erreur lors de la mise à jour du statut.');
     }
+  };
+
+  const STATUS_ACTIONS = {
+    active: [
+      { toStatus: 'sous_reservation', label: 'Réserver', icon: Lock, color: 'text-orange-600 hover:text-orange-700 hover:bg-orange-50', confirmLabel: 'Passer sous réservation', confirmDesc: "L'annonce ne sera plus visible dans les recherches. Les locataires intéressés pourront toujours y accéder via leur candidature ou lien direct." },
+      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50', confirmLabel: 'Marquer comme loué', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
+    ],
+    sous_reservation: [
+      { toStatus: 'active', label: 'Remettre dispo', icon: Unlock, color: 'text-green-600 hover:text-green-700 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
+      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50', confirmLabel: 'Confirmer la location', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
+    ],
+    loue: [
+      { toStatus: 'active', label: 'Remettre dispo', icon: Unlock, color: 'text-green-600 hover:text-green-700 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
+    ],
   };
 
   const handleSubmit = async () => {
@@ -215,14 +227,18 @@ const MyPropertiesPage = () => {
                         {property.status === 'rejected' ? 'Resoumettre' : 'Soumettre'}
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
-                      onClick={() => { setStatusTarget(property); setNewStatus(property.status); }}
-                    >
-                      Statut
-                    </Button>
+                    {(STATUS_ACTIONS[property.status] ?? []).map((action) => (
+                      <Button
+                        key={action.toStatus}
+                        variant="ghost"
+                        size="sm"
+                        className={`flex items-center gap-1 ${action.color}`}
+                        onClick={() => setStatusTarget({ property, toStatus: action.toStatus, ...action })}
+                      >
+                        <action.icon className="h-4 w-4" />
+                        {action.label}
+                      </Button>
+                    ))}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -293,22 +309,30 @@ const MyPropertiesPage = () => {
         </div>
       </Modal>
 
-      {/* Status modal */}
-      <Modal isOpen={!!statusTarget} onClose={() => { setStatusTarget(null); setNewStatus(''); }} title="Changer le statut">
-        <p className="text-sm text-gray-600 mb-4">
-          Modifier le statut de <strong>{statusTarget?.title}</strong>
-        </p>
-        <Select
-          label="Nouveau statut"
-          options={OWNER_SETTABLE_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
-          value={newStatus}
-          onChange={(e) => setNewStatus(e.target.value)}
-        />
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={() => { setStatusTarget(null); setNewStatus(''); }}>Annuler</Button>
-          <Button variant="primary" onClick={handleStatusChange} disabled={updatePropertyStatus.isPending || !newStatus}>
-            {updatePropertyStatus.isPending ? 'Mise à jour...' : 'Confirmer'}
-          </Button>
+      {/* Status confirmation modal */}
+      <Modal
+        isOpen={!!statusTarget}
+        onClose={() => setStatusTarget(null)}
+        title={statusTarget?.confirmLabel ?? 'Modifier le statut'}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            {statusTarget?.confirmDesc}
+          </p>
+          <p className="text-sm font-medium text-gray-800">
+            Annonce : <strong>{statusTarget?.property?.title}</strong>
+          </p>
+          {error && <Alert type="error" message={error} onDismiss={() => setError('')} />}
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setStatusTarget(null)}>Annuler</Button>
+            <Button
+              variant="primary"
+              onClick={handleStatusChange}
+              disabled={updatePropertyStatus.isPending}
+            >
+              {updatePropertyStatus.isPending ? 'Mise à jour...' : 'Confirmer'}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>
