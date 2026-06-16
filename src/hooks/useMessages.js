@@ -20,18 +20,28 @@ export const useMessagesPolling = (conversationId, isActive = true) => {
   const lastIdRef = useRef(0);
   const intervalRef = useRef(null);
 
-  const { isLoading } = useQuery({
+  // Reset when switching conversations
+  useEffect(() => {
+    setMessages([]);
+    lastIdRef.current = 0;
+  }, [conversationId]);
+
+  const { data: initialData, isLoading } = useQuery({
     queryKey: ['messagesInitial', conversationId],
     queryFn: () => getMessages(conversationId, { per_page: 50 }),
     enabled: isAuthenticated && !!conversationId,
-    onSuccess: (data) => {
-      const items = data?.data ?? [];
-      setMessages(items);
-      if (items.length > 0) {
-        lastIdRef.current = items[items.length - 1]?.id ?? 0;
-      }
-    },
   });
+
+  // onSuccess was removed in TanStack Query v5 — use useEffect instead
+  useEffect(() => {
+    if (!initialData) return;
+    // Backend returns messages newest-first (->latest()), reverse for chronological display
+    const items = (initialData.data ?? []).slice().reverse();
+    setMessages(items);
+    if (items.length > 0) {
+      lastIdRef.current = items[items.length - 1]?.id ?? 0;
+    }
+  }, [initialData]);
 
   const poll = useCallback(async () => {
     if (!conversationId || !isAuthenticated) return;

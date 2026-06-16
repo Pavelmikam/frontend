@@ -32,21 +32,13 @@ const ConversationView = ({ conversationId }) => {
   const [prevCount, setPrevCount] = useState(0);
 
   const { data: convData, isLoading: convLoading } = useConversation(conversationId);
-  const { messages, isLoading: msgLoading, setMessages } = useMessagesPolling(conversationId, true);
+  const { messages, isLoading: msgLoading } = useMessagesPolling(conversationId, true);
   const { archive, unarchive } = useConversationMutations();
 
   const conversation = convData?.conversation ?? convData;
   const other = conversation?.other_participant ?? {};
   const property = conversation?.property ?? {};
   const isArchived = conversation?.is_archived;
-
-  // Fusionner messages initiaux depuis useConversation dans le state de polling
-  useEffect(() => {
-    const initial = convData?.messages?.data ?? [];
-    if (initial.length > 0 && messages.length === 0) {
-      setMessages?.(initial);
-    }
-  }, [convData]);
 
   // Scroll to bottom quand de nouveaux messages arrivent
   useEffect(() => {

@@ -30,7 +30,7 @@ const AdminUsersPage = () => {
   const [suspendTarget, setSuspendTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data, isLoading } = useAdminUsers({ ...filters, page });
+  const { data, isLoading, isError } = useAdminUsers({ ...filters, page });
   const { suspend, activate, delete: deleteMut, restore } = useAdminUserMutations();
 
   const users = data?.data ?? [];
@@ -89,6 +89,12 @@ const AdminUsersPage = () => {
       <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
         {isLoading ? (
           <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        ) : isError ? (
+          <div className="text-center py-12 text-red-500">
+            <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p className="font-medium">Erreur lors du chargement</p>
+            <p className="text-sm text-gray-400 mt-1">Vérifiez votre connexion et réessayez.</p>
+          </div>
         ) : users.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
