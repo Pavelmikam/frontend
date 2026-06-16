@@ -16,11 +16,11 @@ const MessageInput = ({ conversationId, onSent, disabled }) => {
     sendMsg(
       { body: text, attachments: files },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setText('');
           setFiles([]);
           setFileError('');
-          onSent?.();
+          onSent?.(data);
         },
       }
     );

@@ -17,14 +17,26 @@ export const useMessages = (conversationId, params = {}) => {
 export const useMessagesPolling = (conversationId, isActive = true) => {
   const { isAuthenticated } = useAuth();
   const [messages, setMessages] = useState([]);
-  const lastIdRef = useRef(0);
-  const intervalRef = useRef(null);
+  const lastIdRef      = useRef(0);
+  const initializedRef = useRef(false); // true une fois que le chargement initial est terminé
+  const intervalRef    = useRef(null);
 
-  // Reset when switching conversations
+  // Reset complet quand on change de conversation
   useEffect(() => {
     setMessages([]);
-    lastIdRef.current = 0;
+    lastIdRef.current      = 0;
+    initializedRef.current = false;
   }, [conversationId]);
+
+  // Append un message sans doublon (utilisé après envoi local)
+  const appendMessage = useCallback((msg) => {
+    if (!msg?.id) return;
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      lastIdRef.current = msg.id;
+      return [...prev, msg];
+    });
+  }, []);
 
   const { data: initialData, isLoading } = useQuery({
     queryKey: ['messagesInitial', conversationId],
@@ -32,26 +44,35 @@ export const useMessagesPolling = (conversationId, isActive = true) => {
     enabled: isAuthenticated && !!conversationId,
   });
 
-  // onSuccess was removed in TanStack Query v5 — use useEffect instead
+  // onSuccess supprimé en TanStack Query v5 — on utilise useEffect
   useEffect(() => {
     if (!initialData) return;
-    // Backend returns messages newest-first (->latest()), reverse for chronological display
-    const items = (initialData.data ?? []).slice().reverse();
+    const items = initialData.data ?? [];
     setMessages(items);
     if (items.length > 0) {
       lastIdRef.current = items[items.length - 1]?.id ?? 0;
     }
+    initializedRef.current = true; // Chargement initial terminé — polling peut démarrer
   }, [initialData]);
 
   const poll = useCallback(async () => {
     if (!conversationId || !isAuthenticated) return;
     if (document.visibilityState !== 'visible') return;
+    // Ne pas poller avant que le chargement initial soit terminé :
+    // évite que le nouvel onglet (dupliqué) ne refasse since_id=0 et ne double les messages.
+    if (!initializedRef.current) return;
     try {
       const data = await getMessagesSince(conversationId, lastIdRef.current);
-      const newMessages = data?.data ?? [];
-      if (newMessages.length > 0) {
-        setMessages((prev) => [...prev, ...newMessages]);
-        lastIdRef.current = newMessages[newMessages.length - 1]?.id ?? lastIdRef.current;
+      const incoming = data?.data ?? [];
+      if (incoming.length > 0) {
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id));
+          const unique = incoming.filter((m) => !existingIds.has(m.id));
+          if (unique.length === 0) return prev;
+          // Tri par id pour garantir l'ordre chronologique quelle que soit la source
+          return [...prev, ...unique].sort((a, b) => a.id - b.id);
+        });
+        lastIdRef.current = incoming[incoming.length - 1]?.id ?? lastIdRef.current;
       }
     } catch {
       // Silencieux
@@ -80,7 +101,7 @@ export const useMessagesPolling = (conversationId, isActive = true) => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [isActive, poll]);
 
-  return { messages, setMessages, isLoading, lastMessageId: lastIdRef.current };
+  return { messages, setMessages, appendMessage, isLoading, lastMessageId: lastIdRef.current };
 };
 
 export const useSendMessage = (conversationId) => {
@@ -112,7 +133,8 @@ export const useSendMessage = (conversationId) => {
       return sendMessage(conversationId, body, attachments ?? []);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messagesInitial', conversationId] });
+      // Ne pas invalider messagesInitial : le message est appendé directement via
+      // appendMessage() pour éviter la race condition avec le polling.
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
     onError: (error) => {

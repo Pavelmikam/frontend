@@ -13,15 +13,21 @@ const Charts = lazy(() => import('./AdminDashboardCharts'));
 
 const AdminDashboardPage = () => {
   const { data, isLoading } = useAdminDashboard();
-  const stats = data?.stats ?? {};
+
+  // Backend returns nested: { users:{}, properties:{}, rental_requests:{}, reports:{}, conversations:{} }
+  const users          = data?.users          ?? {};
+  const properties     = data?.properties     ?? {};
+  const rentalRequests = data?.rental_requests ?? {};
+  const reports        = data?.reports        ?? {};
+  const conversations  = data?.conversations  ?? {};
 
   const kpis = [
-    { title: 'Utilisateurs totaux',     value: stats.total_users,               icon: <Users className="h-5 w-5" />,       color: 'blue'   },
-    { title: 'Annonces actives',         value: stats.active_properties,          icon: <Home className="h-5 w-5" />,        color: 'green'  },
-    { title: 'Candidatures en attente',  value: stats.pending_rental_requests,    icon: <Briefcase className="h-5 w-5" />,   color: 'yellow' },
-    { title: 'Signalements en attente',  value: stats.pending_reports,            icon: <Flag className="h-5 w-5" />,        color: 'red'    },
-    { title: 'Annonces en modération',   value: stats.pending_properties,         icon: <ShieldCheck className="h-5 w-5" />, color: 'purple' },
-    { title: 'Messages totaux',          value: stats.total_messages,             icon: <MessageSquare className="h-5 w-5" />, color: 'blue' },
+    { title: 'Utilisateurs totaux',     value: users.total,                icon: <Users className="h-5 w-5" />,        color: 'blue'   },
+    { title: 'Annonces actives',         value: properties.active,          icon: <Home className="h-5 w-5" />,         color: 'green'  },
+    { title: 'Candidatures en attente',  value: rentalRequests.en_attente,  icon: <Briefcase className="h-5 w-5" />,    color: 'yellow' },
+    { title: 'Signalements en attente',  value: reports.pending,            icon: <Flag className="h-5 w-5" />,         color: 'red'    },
+    { title: 'Annonces en modération',   value: properties.pending,         icon: <ShieldCheck className="h-5 w-5" />,  color: 'purple' },
+    { title: "Messages aujourd'hui",     value: conversations.messages_today, icon: <MessageSquare className="h-5 w-5" />, color: 'blue' },
   ];
 
   return (
@@ -32,12 +38,12 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Alertes */}
-      {!isLoading && stats.pending_properties > 0 && (
+      {!isLoading && properties.pending > 0 && (
         <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-purple-600 flex-shrink-0" />
             <p className="text-sm font-medium text-purple-800">
-              {stats.pending_properties} annonce(s) en attente de modération
+              {properties.pending} annonce(s) en attente de modération
             </p>
           </div>
           <Link to={ROUTES.ADMIN_MODERATION} className="text-sm text-purple-700 font-medium hover:underline">
@@ -45,12 +51,12 @@ const AdminDashboardPage = () => {
           </Link>
         </div>
       )}
-      {!isLoading && stats.pending_reports > 0 && (
+      {!isLoading && reports.pending > 0 && (
         <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
             <p className="text-sm font-medium text-red-800">
-              {stats.pending_reports} signalement(s) en attente de traitement
+              {reports.pending} signalement(s) en attente de traitement
             </p>
           </div>
           <Link to={ROUTES.ADMIN_SIGNALEMENTS} className="text-sm text-red-700 font-medium hover:underline">
@@ -71,15 +77,15 @@ const AdminDashboardPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
             <p className="text-xs text-gray-500 mb-1">Locataires</p>
-            <p className="text-xl font-bold text-blue-600">{stats.total_locataires ?? 0}</p>
+            <p className="text-xl font-bold text-blue-600">{users.locataires ?? 0}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
             <p className="text-xs text-gray-500 mb-1">Propriétaires</p>
-            <p className="text-xl font-bold text-green-600">{stats.total_proprietaires ?? 0}</p>
+            <p className="text-xl font-bold text-green-600">{users.proprietaires ?? 0}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
             <p className="text-xs text-gray-500 mb-1">Admins</p>
-            <p className="text-xl font-bold text-purple-600">{stats.total_admins ?? 0}</p>
+            <p className="text-xl font-bold text-purple-600">{users.admins ?? 0}</p>
           </div>
         </div>
       )}

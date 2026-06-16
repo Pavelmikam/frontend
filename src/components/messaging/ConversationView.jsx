@@ -32,7 +32,7 @@ const ConversationView = ({ conversationId }) => {
   const [prevCount, setPrevCount] = useState(0);
 
   const { data: convData, isLoading: convLoading } = useConversation(conversationId);
-  const { messages, isLoading: msgLoading } = useMessagesPolling(conversationId, true);
+  const { messages, appendMessage, isLoading: msgLoading } = useMessagesPolling(conversationId, true);
   const { archive, unarchive } = useConversationMutations();
 
   const conversation = convData?.conversation ?? convData;
@@ -48,7 +48,8 @@ const ConversationView = ({ conversationId }) => {
     }
   }, [messages.length]);
 
-  const handleSent = () => {
+  const handleSent = (sentMsg) => {
+    if (sentMsg) appendMessage(sentMsg);
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
