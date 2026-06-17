@@ -22,12 +22,12 @@ const AdminDashboardPage = () => {
   const conversations  = data?.conversations  ?? {};
 
   const kpis = [
-    { title: 'Utilisateurs totaux',     value: users.total,                icon: <Users className="h-5 w-5" />,        color: 'blue'   },
-    { title: 'Annonces actives',         value: properties.active,          icon: <Home className="h-5 w-5" />,         color: 'green'  },
-    { title: 'Candidatures en attente',  value: rentalRequests.en_attente,  icon: <Briefcase className="h-5 w-5" />,    color: 'yellow' },
-    { title: 'Signalements en attente',  value: reports.pending,            icon: <Flag className="h-5 w-5" />,         color: 'red'    },
-    { title: 'Annonces en modération',   value: properties.pending,         icon: <ShieldCheck className="h-5 w-5" />,  color: 'purple' },
-    { title: "Messages aujourd'hui",     value: conversations.messages_today, icon: <MessageSquare className="h-5 w-5" />, color: 'blue' },
+    { title: 'Utilisateurs totaux',     value: users.total,                  icon: <Users className="h-5 w-5" />,        color: 'blue'   },
+    { title: 'Annonces actives',         value: properties.active,            icon: <Home className="h-5 w-5" />,         color: 'green'  },
+    { title: 'Candidatures en attente',  value: rentalRequests.en_attente,    icon: <Briefcase className="h-5 w-5" />,    color: 'yellow' },
+    { title: 'Signalements en attente',  value: reports.pending,              icon: <Flag className="h-5 w-5" />,         color: 'red'    },
+    { title: 'Annonces brouillon',        value: properties.draft,             icon: <ShieldCheck className="h-5 w-5" />,  color: 'purple' },
+    { title: "Messages aujourd'hui",     value: conversations.messages_today, icon: <MessageSquare className="h-5 w-5" />, color: 'blue'  },
   ];
 
   return (
@@ -38,19 +38,6 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Alertes */}
-      {!isLoading && properties.pending > 0 && (
-        <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="h-5 w-5 text-purple-600 flex-shrink-0" />
-            <p className="text-sm font-medium text-purple-800">
-              {properties.pending} annonce(s) en attente de modération
-            </p>
-          </div>
-          <Link to={ROUTES.ADMIN_MODERATION} className="text-sm text-purple-700 font-medium hover:underline">
-            Modérer →
-          </Link>
-        </div>
-      )}
       {!isLoading && reports.pending > 0 && (
         <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
@@ -114,9 +101,8 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Liens rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Modération',   path: ROUTES.ADMIN_MODERATION,   icon: ShieldCheck },
           { label: 'Utilisateurs', path: ROUTES.ADMIN_UTILISATEURS, icon: Users },
           { label: 'Signalements', path: ROUTES.ADMIN_SIGNALEMENTS, icon: Flag },
           { label: 'Catégories',   path: ROUTES.ADMIN_CATEGORIES,   icon: Home },

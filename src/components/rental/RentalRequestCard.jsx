@@ -38,9 +38,9 @@ const RentalRequestCard = ({ request, viewAs = 'tenant', onDecide, onCancel, onC
     >
       {/* Thumbnail */}
       <div className="w-full sm:w-24 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-        {property.primary_image ? (
+        {property.thumbnail_url ? (
           <img
-            src={property.primary_image}
+            src={property.thumbnail_url}
             alt={property.title}
             className="w-full h-full object-cover"
           />

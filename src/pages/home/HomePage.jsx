@@ -83,8 +83,8 @@ const HOW_IT_WORKS = {
     {
       step: '2',
       icon: <Clock className="h-5 w-5" />,
-      title: 'Validation par notre équipe',
-      desc: 'Votre annonce est examinée sous 24h. Si elle respecte nos critères, elle est approuvée et mise en ligne.',
+      title: 'Publication instantanée',
+      desc: 'Publiez en un clic : votre annonce est immédiatement visible par tous les locataires de la plateforme.',
     },
     {
       step: '3',

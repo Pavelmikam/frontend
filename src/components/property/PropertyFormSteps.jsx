@@ -280,9 +280,9 @@ const Step6 = ({ data }) => (
         </div>
       </div>
     </div>
-    <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-      <p className="text-sm text-orange-800">
-        <strong>Note :</strong> Votre annonce sera soumise à validation par un administrateur avant d'être publiée.
+    <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+      <p className="text-sm text-green-800">
+        <strong>Prêt à publier !</strong> Après publication, votre annonce sera immédiatement visible par tous les locataires.
       </p>
     </div>
   </div>

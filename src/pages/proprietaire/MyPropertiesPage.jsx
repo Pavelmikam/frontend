@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, Pencil, Trash2, Building2, Users, BarChart2, Send, Lock, Unlock, CheckCircle } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, Building2, Users, BarChart2, Globe, Lock, Unlock, CheckCircle } from 'lucide-react';
 import useMyProperties from '@/hooks/useMyProperties';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import PropertyStatusBadge from '@/components/ui/PropertyStatusBadge';
-import PropertyApprovalBadge from '@/components/ui/PropertyApprovalBadge';
 import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
 import Spinner from '@/components/ui/Spinner';
@@ -36,7 +35,7 @@ const MyPropertiesPage = () => {
   // KPIs
   const total = meta.total ?? properties.length;
   const available = properties.filter((p) => p.status === 'active').length;
-  const pending = properties.filter((p) => p.status === 'pending').length;
+  const drafts = properties.filter((p) => p.status === 'draft').length;
   const views = properties.reduce((sum, p) => sum + (p.views_count ?? 0), 0);
 
   const handleDelete = async () => {
@@ -62,15 +61,15 @@ const MyPropertiesPage = () => {
 
   const STATUS_ACTIONS = {
     active: [
-      { toStatus: 'sous_reservation', label: 'Réserver', icon: Lock, color: 'text-orange-600 hover:text-orange-700 hover:bg-orange-50', confirmLabel: 'Passer sous réservation', confirmDesc: "L'annonce ne sera plus visible dans les recherches. Les locataires intéressés pourront toujours y accéder via leur candidature ou lien direct." },
-      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50', confirmLabel: 'Marquer comme loué', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
+      { toStatus: 'sous_reservation', label: 'Réserver', icon: Lock, color: 'text-orange-600 border-orange-300 hover:bg-orange-50', confirmLabel: 'Passer sous réservation', confirmDesc: "L'annonce ne sera plus visible dans les recherches. Les locataires intéressés pourront toujours y accéder via leur candidature ou lien direct." },
+      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 border-blue-300 hover:bg-blue-50', confirmLabel: 'Marquer comme loué', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
     ],
     sous_reservation: [
-      { toStatus: 'active', label: 'Remettre dispo', icon: Unlock, color: 'text-green-600 hover:text-green-700 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
-      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 hover:text-blue-700 hover:bg-blue-50', confirmLabel: 'Confirmer la location', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
+      { toStatus: 'active', label: 'Disponible', icon: Unlock, color: 'text-green-600 border-green-300 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
+      { toStatus: 'loue', label: 'Loué', icon: CheckCircle, color: 'text-blue-600 border-blue-300 hover:bg-blue-50', confirmLabel: 'Confirmer la location', confirmDesc: "L'annonce sera retirée des recherches publiques et marquée comme louée." },
     ],
     loue: [
-      { toStatus: 'active', label: 'Remettre dispo', icon: Unlock, color: 'text-green-600 hover:text-green-700 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
+      { toStatus: 'active', label: 'Disponible', icon: Unlock, color: 'text-green-600 border-green-300 hover:bg-green-50', confirmLabel: 'Remettre disponible', confirmDesc: "L'annonce sera de nouveau visible dans les recherches publiques." },
     ],
   };
 
@@ -105,8 +104,8 @@ const MyPropertiesPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Total annonces', value: total, color: 'blue' },
-            { label: 'Disponibles', value: available, color: 'green' },
-            { label: 'En attente', value: pending, color: 'yellow' },
+            { label: 'Publiées', value: available, color: 'green' },
+            { label: 'Brouillons', value: drafts, color: 'yellow' },
             { label: 'Vues totales', value: views, color: 'purple' },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white rounded-xl p-4 border border-gray-200">
@@ -147,7 +146,7 @@ const MyPropertiesPage = () => {
                   key={property.id}
                   className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-4"
                 >
-                  {/* Thumbnail */}
+                  {/* Image */}
                   <div className="w-full sm:w-28 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     {property.thumbnail_url ? (
                       <img
@@ -162,11 +161,10 @@ const MyPropertiesPage = () => {
                     )}
                   </div>
 
-                  {/* Info */}
+                  {/* Statut + nom + description + vues */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap gap-2 mb-1">
                       <PropertyStatusBadge status={property.status} />
-                      <PropertyApprovalBadge status={property.status} rejectionReason={property.rejection_reason} />
                     </div>
                     <h3 className="font-semibold text-gray-900 truncate">{property.title}</h3>
                     <p className="text-sm text-gray-500 mt-0.5">
@@ -182,7 +180,7 @@ const MyPropertiesPage = () => {
                         </span>
                       )}
                     </p>
-                    {(property.requests_count > 0) && (
+                    {property.requests_count > 0 && (
                       <Link
                         to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}
                         className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1"
@@ -194,58 +192,55 @@ const MyPropertiesPage = () => {
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex sm:flex-col gap-2 flex-shrink-0">
+                  {/* Actions — extrême droite, grille 2 colonnes compacte */}
+                  <div className="flex-shrink-0 grid grid-cols-2 gap-0.5 self-start">
                     <Link to={`${ROUTES.ANNONCES}/${property.id}`}>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" /> Voir
+                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none">
+                        <Eye className="h-3.5 w-3.5" /> Voir
                       </Button>
                     </Link>
-                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/stats`}>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1 text-purple-600 hover:text-purple-700">
-                        <BarChart2 className="h-4 w-4" /> Stats
-                      </Button>
-                    </Link>
-                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/candidatures`}>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1 text-blue-500 hover:text-blue-700">
-                        <Users className="h-4 w-4" />
-                      </Button>
-                    </Link>
+
                     <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/modifier`}>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1">
-                        <Pencil className="h-4 w-4" /> Modifier
+                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none">
+                        <Pencil className="h-3.5 w-3.5" /> Modifier
                       </Button>
                     </Link>
-                    {(property.status === 'draft' || property.status === 'rejected') && (
+
+                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/stats`} className="col-span-2">
+                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-purple-600 border-purple-200 hover:bg-purple-50">
+                        <BarChart2 className="h-3.5 w-3.5" /> Statistiques
+                      </Button>
+                    </Link>
+
+                    {property.status === 'draft' && (
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex items-center gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        variant="outline"
+                        className="col-span-2 flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-green-600 border-green-300 hover:bg-green-50"
                         onClick={() => setSubmitTarget(property)}
                       >
-                        <Send className="h-4 w-4" />
-                        {property.status === 'rejected' ? 'Resoumettre' : 'Soumettre'}
+                        <Globe className="h-3.5 w-3.5" />
+                        Publier
                       </Button>
                     )}
+
                     {(STATUS_ACTIONS[property.status] ?? []).map((action) => (
                       <Button
                         key={action.toStatus}
-                        variant="ghost"
-                        size="sm"
-                        className={`flex items-center gap-1 ${action.color}`}
+                        variant="outline"
+                        className={`flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none ${action.color}`}
                         onClick={() => setStatusTarget({ property, toStatus: action.toStatus, ...action })}
                       >
-                        <action.icon className="h-4 w-4" />
+                        <action.icon className="h-3.5 w-3.5" />
                         {action.label}
                       </Button>
                     ))}
+
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1 text-red-500 hover:text-red-600"
+                      variant="outline"
+                      className="col-span-2 flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-red-500 border-red-200 hover:bg-red-50"
                       onClick={() => setDeleteTarget(property)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" /> Supprimer
                     </Button>
                   </div>
                 </div>
@@ -267,17 +262,14 @@ const MyPropertiesPage = () => {
         )}
       </div>
 
-      {/* Submit modal */}
+      {/* Publish modal */}
       <Modal
         isOpen={!!submitTarget}
         onClose={() => setSubmitTarget(null)}
-        title={submitTarget?.status === 'rejected' ? "Resoumettre pour validation" : "Soumettre pour validation"}
+        title="Publier l'annonce"
       >
         <p className="text-sm text-gray-600 mb-6">
-          {submitTarget?.status === 'rejected'
-            ? <>Resoumettre <strong>{submitTarget?.title}</strong> après correction ? L'administrateur la réexaminera.</>
-            : <>Soumettre <strong>{submitTarget?.title}</strong> pour validation par l'administrateur ? Elle sera visible publiquement une fois approuvée.</>
-          }
+          Publier <strong>{submitTarget?.title}</strong> ? Elle sera immédiatement visible par tous les locataires.
         </p>
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={() => setSubmitTarget(null)}>Annuler</Button>
@@ -287,11 +279,8 @@ const MyPropertiesPage = () => {
             disabled={submitProperty.isPending}
             className="flex items-center gap-2"
           >
-            <Send className="h-4 w-4" />
-            {submitProperty.isPending
-              ? (submitTarget?.status === 'rejected' ? 'Resoumission...' : 'Soumission...')
-              : (submitTarget?.status === 'rejected' ? 'Resoumettre' : 'Soumettre')
-            }
+            <Globe className="h-4 w-4" />
+            {submitProperty.isPending ? 'Publication...' : 'Publier'}
           </Button>
         </div>
       </Modal>

@@ -73,12 +73,12 @@ export const usePropertyMutations = () => {
   const submitMutation = useMutation({
     mutationFn: (id) => submitProperty(id),
     onSuccess: (_, id) => {
-      toast.success("Annonce soumise à la modération.");
+      toast.success("Annonce publiée avec succès !");
       queryClient.invalidateQueries({ queryKey: ['property', id] });
       invalidate();
     },
     onError: (error) => {
-      toast.error(error.userMessage || "Erreur lors de la soumission.");
+      toast.error(error.userMessage || "Erreur lors de la publication.");
     },
   });
 

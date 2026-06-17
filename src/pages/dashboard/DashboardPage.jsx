@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Heart, Bookmark, Home, Plus, ShieldCheck, Bell, User, Eye, Briefcase,
-  Users, TrendingUp, BarChart2, Building2, MapPin,
+  Users, TrendingUp, BarChart2, Building2, MapPin, FileText, Clock,
 } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import { useTenantDashboard, useOwnerDashboard, usePopularProperties } from '@/hooks/useStatistics';
@@ -34,11 +34,13 @@ const TenantDashboard = ({ user }) => {
   const { data: contributorData } = useMyContributorProfile();
   const { data: popularData, isLoading: popularLoading } = usePopularProperties();
   const { data: searchData } = useSavedSearches();
+  const { data: pendingData, isLoading: pendingLoading } = useRentalRequests({ status: 'en_attente' });
 
   const stats = data?.data ?? {};
   const requests = stats.requests ?? {};
   const searchCount = searchData?.data?.length ?? 0;
   const popularProperties = popularData?.data ?? [];
+  const pendingRequests = pendingData?.data ?? [];
 
   return (
     <div className="space-y-6">
@@ -56,6 +58,52 @@ const TenantDashboard = ({ user }) => {
         <StatCard title="En attente" value={requests.en_attente ?? '—'} icon={<Bell className="h-5 w-5" />} color="yellow" isLoading={isLoading} />
         <StatCard title="Acceptées" value={requests.acceptees ?? '—'} icon={<TrendingUp className="h-5 w-5" />} color="green" isLoading={isLoading} />
         <StatCard title="Annonces favorites" value={stats.favorites_count ?? '—'} icon={<Heart className="h-5 w-5" />} color="red" isLoading={isLoading} />
+      </div>
+
+      {/* Candidatures en attente avec l'annonce associée */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-yellow-500" />
+            Candidatures en attente
+            {pendingRequests.length > 0 && (
+              <span className="ml-1 bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                {pendingRequests.length}
+              </span>
+            )}
+          </h2>
+          <Link to={ROUTES.MES_CANDIDATURES} className="text-xs text-blue-600 hover:underline">
+            Voir toutes →
+          </Link>
+        </div>
+        {pendingLoading ? (
+          <div className="flex justify-center py-4"><Spinner /></div>
+        ) : pendingRequests.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-4">Aucune candidature en attente</p>
+        ) : (
+          <div className="space-y-2">
+            {pendingRequests.slice(0, 5).map((req) => (
+              <Link
+                key={req.id}
+                to={ROUTES.CANDIDATURE(req.id)}
+                className="flex items-center justify-between gap-3 p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <Building2 className="h-4 w-4 text-gray-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {req.property?.title ?? 'Annonce inconnue'}
+                    </p>
+                    {req.property?.city && (
+                      <p className="text-xs text-gray-500 truncate">{req.property.city}</p>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs text-yellow-600 font-medium shrink-0">En attente</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -174,8 +222,11 @@ const OwnerDashboard = ({ user }) => {
                 <div key={p.id} className="flex items-center justify-between gap-3">
                   <p className="text-sm text-gray-800 truncate flex-1">{p.title}</p>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="flex items-center gap-1 text-xs text-gray-500">
-                      <Eye className="h-3 w-3" />{p.views_count}
+                    <span className="flex items-center gap-1 text-xs text-gray-500" title="Vues">
+                      <Eye className="h-3 w-3" />{p.views_count ?? 0}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-purple-600 font-medium" title="Candidatures reçues">
+                      <FileText className="h-3 w-3" />{p.requests_count ?? 0}
                     </span>
                     <Link to={`/mes-annonces/${p.id}/stats`} className="text-xs text-blue-600 hover:underline">
                       Stats →

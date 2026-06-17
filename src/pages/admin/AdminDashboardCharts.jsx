@@ -30,7 +30,7 @@ const AdminDashboardCharts = ({ charts }) => {
       {/* Annonces par mois */}
       {properties.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Annonces soumises / approuvées</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Annonces créées / publiées</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={properties}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -38,9 +38,8 @@ const AdminDashboardCharts = ({ charts }) => {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Legend iconSize={10} />
-              <Bar dataKey="submitted" fill="#93c5fd" name="Soumises" radius={[2,2,0,0]} />
-              <Bar dataKey="approved"  fill="#22c55e" name="Approuvées" radius={[2,2,0,0]} />
-              <Bar dataKey="rejected"  fill="#f87171" name="Rejetées" radius={[2,2,0,0]} />
+              <Bar dataKey="submitted" fill="#93c5fd" name="Créées" radius={[2,2,0,0]} />
+              <Bar dataKey="approved"  fill="#22c55e" name="Publiées" radius={[2,2,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -7,11 +7,11 @@ import Spinner from '@/components/ui/Spinner';
 import { ROUTES } from '@/utils/constants';
 
 const TABS = [
-  { key: '',           label: 'Toutes' },
-  { key: 'en_attente', label: 'En attente' },
-  { key: 'acceptee',   label: 'Acceptées' },
-  { key: 'refusee',    label: 'Refusées' },
-  { key: 'annulee',    label: 'Annulées' },
+  { key: '',           label: 'Toutes',     countKey: null },
+  { key: 'en_attente', label: 'En attente', countKey: 'en_attente' },
+  { key: 'acceptee',   label: 'Acceptées',  countKey: 'acceptee' },
+  { key: 'refusee',    label: 'Refusées',   countKey: 'refusee' },
+  { key: 'annulee',    label: 'Annulées',   countKey: 'annulee' },
 ];
 
 const EMPTY_MESSAGES = {
@@ -28,10 +28,20 @@ const MyRequestsPage = () => {
 
   const params = activeTab ? { status: activeTab } : {};
   const { data, isLoading } = useRentalRequests(params);
+  const { data: allData } = useRentalRequests({});
   const { cancel } = useRentalRequestMutations();
 
   const requests = data?.data ?? [];
+  const allRequests = allData?.data ?? [];
   const empty = EMPTY_MESSAGES[activeTab] ?? EMPTY_MESSAGES[''];
+
+  const counts = {
+    '':          allData?.meta?.total ?? allRequests.length,
+    en_attente:  allRequests.filter((r) => r.status === 'en_attente').length,
+    acceptee:    allRequests.filter((r) => r.status === 'acceptee').length,
+    refusee:     allRequests.filter((r) => r.status === 'refusee').length,
+    annulee:     allRequests.filter((r) => r.status === 'annulee').length,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,19 +59,30 @@ const MyRequestsPage = () => {
 
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6 overflow-x-auto">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const count = counts[tab.key] ?? 0;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                  isActive
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {tab.label}
+                {count > 0 && (
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                    isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}

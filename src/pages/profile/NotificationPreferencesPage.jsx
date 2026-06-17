@@ -117,13 +117,7 @@ const NotificationPreferencesPage = () => {
             label={NOTIFICATION_TYPE_LABELS[NOTIFICATION_TYPES.PROPERTY_APPROVED]}
             value={getEnabled(NOTIFICATION_TYPES.PROPERTY_APPROVED)}
             onChange={(v) => handleTypeChange(NOTIFICATION_TYPES.PROPERTY_APPROVED, v)}
-            description="Quand l'une de vos annonces est approuvée par un administrateur."
-          />
-          <NotificationPreferenceToggle
-            label={NOTIFICATION_TYPE_LABELS[NOTIFICATION_TYPES.PROPERTY_REJECTED]}
-            value={getEnabled(NOTIFICATION_TYPES.PROPERTY_REJECTED)}
-            onChange={(v) => handleTypeChange(NOTIFICATION_TYPES.PROPERTY_REJECTED, v)}
-            description="Quand l'une de vos annonces est rejetée par un administrateur."
+            description="Quand votre annonce est publiée et mise en ligne avec succès."
           />
         </Section>
       )}

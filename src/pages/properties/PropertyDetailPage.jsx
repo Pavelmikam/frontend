@@ -8,6 +8,7 @@ import {
 import useProperty from '@/hooks/useProperty';
 import { usePropertyMutations } from '@/hooks/usePropertyMutations';
 import { useRentalRequests } from '@/hooks/useRentalRequests';
+import { useConversations } from '@/hooks/useConversations';
 import { usePropertyNeighborhoodScore } from '@/hooks/useNeighborhoodScore';
 import useAuth from '@/hooks/useAuth';
 import StartConversationModal from '@/components/messaging/StartConversationModal';
@@ -21,9 +22,12 @@ import ReportButton from '@/components/admin/ReportButton';
 import NeighborhoodScoreCard from '@/components/neighborhood/NeighborhoodScoreCard';
 import NeighborhoodReportModal from '@/components/neighborhood/NeighborhoodReportModal';
 import NeighborhoodHistoryChart from '@/components/neighborhood/NeighborhoodHistoryChart';
+import NeighborhoodReviewsList from '@/components/neighborhood/NeighborhoodReviewsList';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { formatPrice, formatSurface, formatRooms, getPropertyTypeLabel } from '@/utils/formatters';
 import { ROUTES, NEIGHBORHOOD_CRITERIA } from '@/utils/constants';
 
@@ -37,7 +41,6 @@ const PropertyDetailPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [showResubmitModal, setShowResubmitModal] = useState(false);
 
   const isOwner = isAuthenticated && user?.id === property?.owner?.id;
   const isAdmin = isAuthenticated && user?.role === 'admin';
@@ -58,6 +61,12 @@ const PropertyDetailPage = () => {
   const existingRequest = myRequestsData?.data?.find(
     (r) => r.property?.id === Number(id)
   );
+
+  // Check if a conversation already exists for this property (locataire only)
+  const { data: conversationsData } = useConversations();
+  const existingConversation = isLocataire
+    ? (conversationsData?.data ?? []).find((c) => c.property?.id === Number(id))
+    : null;
 
   if (isLoading) {
     return (
@@ -95,7 +104,7 @@ const PropertyDetailPage = () => {
   };
 
   const formattedDate = property.created_at
-    ? new Date(property.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+    ? format(new Date(property.created_at), 'd MMMM yyyy', { locale: fr })
     : null;
 
   const isPropertyAvailable = property.status === 'active';
@@ -194,40 +203,6 @@ const PropertyDetailPage = () => {
           </div>
         )}
 
-        {/* Rejection banner — only visible to owner */}
-        {isOwner && property.status === 'rejected' && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-red-800">Annonce refusée par l'administrateur</p>
-                {property.rejection_reason && (
-                  <p className="text-sm text-red-700 mt-1">{property.rejection_reason}</p>
-                )}
-                <p className="text-xs text-red-600 mt-2">
-                  Modifiez votre annonce puis ressoumettez-la pour qu'elle soit de nouveau examinée.
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Link to={ROUTES.MES_ANNONCES_MODIFIER(property.id)}>
-                <Button variant="outline" size="sm" className="flex items-center gap-1.5 text-red-700 border-red-300 hover:bg-red-50">
-                  <Pencil className="h-3.5 w-3.5" />
-                  Corriger l'annonce
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1.5 text-green-700 hover:bg-green-50"
-                onClick={() => setShowResubmitModal(true)}
-              >
-                <Send className="h-3.5 w-3.5" />
-                Resoumettre
-              </Button>
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column */}
@@ -364,7 +339,7 @@ const PropertyDetailPage = () => {
                   <>
                     <dt className="text-gray-500">Disponible dès</dt>
                     <dd className="font-medium text-gray-800">
-                      {new Date(property.available_from).toLocaleDateString('fr-FR')}
+                      {format(new Date(property.available_from), 'dd/MM/yyyy')}
                     </dd>
                   </>
                 )}
@@ -447,6 +422,10 @@ const PropertyDetailPage = () => {
                       />
                     </div>
                   )}
+                  <div className="mt-5 pt-5 border-t border-gray-100">
+                    <p className="text-sm font-medium text-gray-700 mb-3">Avis des utilisateurs</p>
+                    <NeighborhoodReviewsList propertyId={property.id} />
+                  </div>
                 </>
               ) : (
                 <p className="text-sm text-gray-400">
@@ -487,13 +466,23 @@ const PropertyDetailPage = () => {
               {/* Contact button for tenant (visible for all logged-in locataires) */}
               {isLocataire && !isOwner && isEmailVerified && (
                 <div className="mt-3">
-                  <button
-                    onClick={() => setShowContactModal(true)}
-                    className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    Contacter le propriétaire
-                  </button>
+                  {existingConversation ? (
+                    <Link
+                      to={`/messagerie/${existingConversation.id}`}
+                      className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Voir la conversation
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => setShowContactModal(true)}
+                      className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Contacter le propriétaire
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -578,28 +567,6 @@ const PropertyDetailPage = () => {
         </div>
       </Modal>
 
-      {/* Re-submit modal */}
-      <Modal isOpen={showResubmitModal} onClose={() => setShowResubmitModal(false)} title="Resoumettre l'annonce">
-        <p className="text-sm text-gray-600 mb-6">
-          Resoumettre <strong>{property.title}</strong> pour une nouvelle vérification par l'administrateur ?
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setShowResubmitModal(false)}>Annuler</Button>
-          <Button
-            variant="primary"
-            disabled={submitProperty.isPending}
-            onClick={async () => {
-              await submitProperty.mutateAsync(property.id);
-              setShowResubmitModal(false);
-            }}
-            className="flex items-center gap-2"
-          >
-            <Send className="h-4 w-4" />
-            {submitProperty.isPending ? 'Soumission...' : 'Resoumettre'}
-          </Button>
-        </div>
-      </Modal>
-
       {/* Apply modal */}
       <ApplyModal
         isOpen={showApplyModal}
@@ -612,6 +579,7 @@ const PropertyDetailPage = () => {
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
         property={property}
+        rentalRequestId={existingRequest?.id}
       />
 
       {/* Évaluation de quartier */}

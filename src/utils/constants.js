@@ -89,7 +89,8 @@ export const API_ROUTES = {
   // Score de quartier (Phase 8)
   NEIGHBORHOOD_SCORE:           '/api/neighborhood/score',
   NEIGHBORHOOD_HISTORY:         '/api/neighborhood/history',
-  NEIGHBORHOOD_PROPERTY_SCORE:  (propertyId) => `/api/neighborhood/property/${propertyId}`,
+  NEIGHBORHOOD_PROPERTY_SCORE:   (propertyId) => `/api/neighborhood/property/${propertyId}`,
+  NEIGHBORHOOD_PROPERTY_REVIEWS: (propertyId) => `/api/neighborhood/property/${propertyId}/reviews`,
   NEIGHBORHOOD_SUBMIT:          '/api/neighborhood/report',
   NEIGHBORHOOD_MY_REPORTS:      '/api/neighborhood/my-reports',
   NEIGHBORHOOD_MY_PROFILE:      '/api/neighborhood/my-profile',
@@ -178,9 +179,7 @@ export const PROPERTY_TYPES = [
 
 export const PROPERTY_STATUSES = [
   { value: 'draft',            label: 'Brouillon',        color: 'gray'   },
-  { value: 'pending',          label: 'En attente',       color: 'yellow' },
   { value: 'active',           label: 'Disponible',       color: 'green'  },
-  { value: 'rejected',         label: 'Refusé',           color: 'red'    },
   { value: 'archived',         label: 'Archivé',          color: 'gray'   },
   { value: 'sous_reservation', label: 'Sous réservation', color: 'orange' },
   { value: 'loue',             label: 'Loué',             color: 'blue'   },

@@ -17,6 +17,11 @@ export const getPropertyNeighborhoodScore = async (propertyId) => {
   return response.data;
 };
 
+export const getPropertyNeighborhoodReviews = async (propertyId) => {
+  const response = await axiosInstance.get(API_ROUTES.NEIGHBORHOOD_PROPERTY_REVIEWS(propertyId));
+  return response.data;
+};
+
 export const getNeighborhoodHistory = async (city, neighborhood, criterion) => {
   const response = await axiosInstance.get(API_ROUTES.NEIGHBORHOOD_HISTORY, {
     params: { city, neighborhood, criterion },

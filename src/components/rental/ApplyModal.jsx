@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 import { useRentalRequestMutations } from '@/hooks/useRentalRequests';
 import { formatPrice } from '@/utils/formatters';
+import { ROUTES } from '@/utils/constants';
 
 const ApplyModal = ({ isOpen, onClose, property }) => {
   const navigate = useNavigate();
@@ -21,14 +22,13 @@ const ApplyModal = ({ isOpen, onClose, property }) => {
       return;
     }
     try {
-      const result = await create.mutateAsync({
+      await create.mutateAsync({
         propertyId: property.id,
         data: { message: trimmed || undefined },
       });
-      const newId = result?.data?.id ?? result?.id;
       onClose();
       setMessage('');
-      if (newId) navigate(`/candidatures/${newId}`);
+      navigate(ROUTES.MES_CANDIDATURES);
     } catch (err) {
       setApiError(err.userMessage || 'Erreur lors de l\'envoi de la candidature.');
     }

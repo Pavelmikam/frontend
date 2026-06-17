@@ -130,7 +130,7 @@ const NeighborhoodReportModal = ({
                 <button
                   key={c.value}
                   type="button"
-                  onClick={() => setValue('criterion', c.value)}
+                  onClick={() => setValue('criterion', c.value, { shouldValidate: true })}
                   className={`p-2.5 rounded-xl border-2 text-center text-xs transition-all ${
                     selectedCriterion === c.value
                       ? 'border-blue-500 bg-blue-50'
@@ -157,7 +157,7 @@ const NeighborhoodReportModal = ({
                   type="button"
                   onMouseEnter={() => setHoveredStar(n)}
                   onMouseLeave={() => setHoveredStar(0)}
-                  onClick={() => setValue('score', n)}
+                  onClick={() => setValue('score', n, { shouldValidate: true })}
                   className={`text-3xl transition-transform hover:scale-110 ${
                     n <= (hoveredStar || selectedScore) ? 'text-yellow-400' : 'text-gray-300'
                   }`}

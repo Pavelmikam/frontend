@@ -13,6 +13,7 @@ import ConversionRateMeter from '@/components/stats/ConversionRateMeter';
 import ExportButton from '@/components/stats/ExportButton';
 import Spinner from '@/components/ui/Spinner';
 import { formatPrice } from '@/utils/formatters';
+import { format } from 'date-fns';
 
 const PropertyStatsPage = () => {
   const { id } = useParams();
@@ -117,7 +118,7 @@ const PropertyStatsPage = () => {
                 className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-gray-800">{req.tenant?.name}</p>
-                  <p className="text-xs text-gray-500">{new Date(req.created_at).toLocaleDateString('fr-FR')}</p>
+                  <p className="text-xs text-gray-500">{format(new Date(req.created_at), 'dd/MM/yyyy')}</p>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                   req.status === 'acceptee' ? 'bg-green-100 text-green-700' :

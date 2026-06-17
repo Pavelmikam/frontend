@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { format } from 'date-fns';
 import { PROPERTY_TYPES, AMENITIES } from '@/utils/constants';
 import { formatPriceShort } from '@/utils/formatters';
 
@@ -73,7 +74,7 @@ const SearchActiveFilters = ({ filters, onRemoveFilter, onClearAll }) => {
   });
 
   if (filters.available_from) {
-    const d = new Date(filters.available_from).toLocaleDateString('fr-FR');
+    const d = format(new Date(filters.available_from), 'dd/MM/yyyy');
     badges.push({ key: 'available_from', label: `Dispo. le ${d}`, remove: () => onRemoveFilter('available_from') });
   }
 

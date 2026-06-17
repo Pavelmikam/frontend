@@ -98,8 +98,8 @@ const RequestDetailPage = () => {
               <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Bien concerné</h2>
               <div className="flex gap-4">
                 <div className="w-20 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                  {property.primary_image ? (
-                    <img src={property.primary_image} alt={property.title} className="w-full h-full object-cover" />
+                  {property.thumbnail_url ? (
+                    <img src={property.thumbnail_url} alt={property.title} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300">
                       <Building2 className="h-6 w-6" />

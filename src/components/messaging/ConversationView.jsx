@@ -102,9 +102,9 @@ const ConversationView = ({ conversationId }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {conversation.rental_request_id && (
+          {conversation.rental_request?.id && (
             <Link
-              to={`/candidatures/${conversation.rental_request_id}`}
+              to={`/candidatures/${conversation.rental_request.id}`}
               className="text-xs text-blue-600 hover:underline flex items-center gap-1"
             >
               <ExternalLink className="h-3.5 w-3.5" />

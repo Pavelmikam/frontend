@@ -26,7 +26,6 @@ import PropertyDetailPage   from '@/pages/properties/PropertyDetailPage';
 import MyPropertiesPage     from '@/pages/proprietaire/MyPropertiesPage';
 import CreatePropertyPage   from '@/pages/proprietaire/CreatePropertyPage';
 import EditPropertyPage     from '@/pages/proprietaire/EditPropertyPage';
-import PendingPropertiesPage from '@/pages/admin/PendingPropertiesPage';
 
 import FavoritesPage           from '@/pages/locataire/FavoritesPage';
 import SavedSearchesPage       from '@/pages/locataire/SavedSearchesPage';
@@ -168,7 +167,6 @@ const router = createBrowserRouter(
           {
             element: <PrivateLayout />,
             children: [
-              { path: '/admin/moderation',          element: <PendingPropertiesPage /> },
               { path: '/admin',                      element: <AdminDashboardPage /> },
               { path: '/admin/utilisateurs',         element: <AdminUsersPage /> },
               { path: '/admin/utilisateurs/:id',     element: <AdminUserDetailPage /> },

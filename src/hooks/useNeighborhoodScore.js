@@ -3,6 +3,7 @@ import {
   getNeighborhoodScore, getPropertyNeighborhoodScore,
   getNeighborhoodHistory, submitNeighborhoodReport,
   getMyNeighborhoodReports, getMyContributorProfile,
+  getPropertyNeighborhoodReviews,
 } from '@/api/neighborhood.api';
 import useAuth from './useAuth';
 import toast from 'react-hot-toast';
@@ -43,6 +44,7 @@ export const useSubmitNeighborhoodReport = () => {
       toast.success('Évaluation soumise ! +5 points contributeur.');
       queryClient.invalidateQueries({ queryKey: ['neighborhoodScore'] });
       queryClient.invalidateQueries({ queryKey: ['propertyNeighborhoodScore'] });
+      queryClient.invalidateQueries({ queryKey: ['neighborhoodReviews'] });
       queryClient.invalidateQueries({ queryKey: ['myNeighborhoodReports'] });
       queryClient.invalidateQueries({ queryKey: ['myContributorProfile'] });
     },
@@ -67,6 +69,15 @@ export const useMyNeighborhoodReports = (params = {}) => {
     queryKey: ['myNeighborhoodReports', params],
     queryFn: () => getMyNeighborhoodReports(params),
     enabled: isAuthenticated,
+  });
+};
+
+export const usePropertyNeighborhoodReviews = (propertyId) => {
+  return useQuery({
+    queryKey: ['neighborhoodReviews', propertyId],
+    queryFn: () => getPropertyNeighborhoodReviews(propertyId),
+    enabled: !!propertyId,
+    staleTime: 1000 * 60 * 5,
   });
 };
 
