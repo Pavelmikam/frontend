@@ -73,6 +73,8 @@ const MyPropertiesPage = () => {
     ],
   };
 
+  const [openActions, setOpenActions] = useState(null);
+
   const handleSubmit = async () => {
     setError('');
     try {
@@ -193,56 +195,93 @@ const MyPropertiesPage = () => {
                   </div>
 
                   {/* Actions — extrême droite, grille 2 colonnes compacte */}
-                  <div className="flex-shrink-0 grid grid-cols-2 gap-0.5 self-start">
-                    <Link to={`${ROUTES.ANNONCES}/${property.id}`}>
-                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none">
-                        <Eye className="h-3.5 w-3.5" /> Voir
-                      </Button>
-                    </Link>
+<div className="relative flex-shrink-0 self-start">
+  <Button
+    variant="outline"
+    className="w-full flex items-center justify-center gap-2"
+    onClick={() =>
+      setOpenActions(openActions === property.id ? null : property.id)
+    }
+  >
+    Actions
+  </Button>
 
-                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/modifier`}>
-                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none">
-                        <Pencil className="h-3.5 w-3.5" /> Modifier
-                      </Button>
-                    </Link>
+  {openActions === property.id && (
+    <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">
+      <div className="space-y-2">
 
-                    <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/stats`} className="col-span-2">
-                      <Button variant="outline" className="w-full flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-purple-600 border-purple-200 hover:bg-purple-50">
-                        <BarChart2 className="h-3.5 w-3.5" /> Statistiques
-                      </Button>
-                    </Link>
+        <Link to={`${ROUTES.ANNONCES}/${property.id}`}>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Voir
+          </Button>
+        </Link>
 
-                    {property.status === 'draft' && (
-                      <Button
-                        variant="outline"
-                        className="col-span-2 flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-green-600 border-green-300 hover:bg-green-50"
-                        onClick={() => setSubmitTarget(property)}
-                      >
-                        <Globe className="h-3.5 w-3.5" />
-                        Publier
-                      </Button>
-                    )}
+        <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/modifier`}>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <Pencil className="h-4 w-4" />
+            Modifier
+          </Button>
+        </Link>
 
-                    {(STATUS_ACTIONS[property.status] ?? []).map((action) => (
-                      <Button
-                        key={action.toStatus}
-                        variant="outline"
-                        className={`flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none ${action.color}`}
-                        onClick={() => setStatusTarget({ property, toStatus: action.toStatus, ...action })}
-                      >
-                        <action.icon className="h-3.5 w-3.5" />
-                        {action.label}
-                      </Button>
-                    ))}
+        <Link to={`${ROUTES.MES_ANNONCES}/${property.id}/stats`}>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 text-purple-600 border-purple-200 hover:bg-purple-50"
+          >
+            <BarChart2 className="h-4 w-4" />
+            Statistiques
+          </Button>
+        </Link>
 
-                    <Button
-                      variant="outline"
-                      className="col-span-2 flex items-center justify-center gap-1 py-1 px-2 text-xs leading-none text-red-500 border-red-200 hover:bg-red-50"
-                      onClick={() => setDeleteTarget(property)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" /> Supprimer
-                    </Button>
-                  </div>
+        {property.status === 'draft' && (
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 text-green-600 border-green-300 hover:bg-green-50"
+            onClick={() => setSubmitTarget(property)}
+          >
+            <Globe className="h-4 w-4" />
+            Publier
+          </Button>
+        )}
+
+        {(STATUS_ACTIONS[property.status] ?? []).map((action) => (
+          <Button
+            key={action.toStatus}
+            variant="outline"
+            className={`w-full flex items-center justify-center gap-2 ${action.color}`}
+            onClick={() =>
+              setStatusTarget({
+                property,
+                toStatus: action.toStatus,
+                ...action,
+              })
+            }
+          >
+            <action.icon className="h-4 w-4" />
+            {action.label}
+          </Button>
+        ))}
+
+        <Button
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2 text-red-500 border-red-200 hover:bg-red-50"
+          onClick={() => setDeleteTarget(property)}
+        >
+          <Trash2 className="h-4 w-4" />
+          Supprimer
+        </Button>
+
+      </div>
+    </div>
+  )}
+</div>
                 </div>
             ))}
           </div>

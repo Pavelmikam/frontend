@@ -28,9 +28,7 @@ const PopularPropertiesPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property, idx) => {
-            const thumb = property.images?.find((i) => i.is_primary) ?? property.images?.[0];
-            return (
+          {properties.map((property, idx) => (
               <Link
                 key={property.id}
                 to={`${ROUTES.ANNONCES}/${property.id}`}
@@ -38,9 +36,9 @@ const PopularPropertiesPage = () => {
               >
                 {/* Thumbnail */}
                 <div className="relative h-48 bg-gray-100">
-                  {thumb ? (
+                  {property.thumbnail_url ? (
                     <img
-                      src={thumb.thumbnail_url || thumb.optimized_url}
+                      src={property.thumbnail_url}
                       alt={property.title}
                       className="w-full h-full object-cover"
                     />
@@ -68,8 +66,7 @@ const PopularPropertiesPage = () => {
                   <p className="text-base font-bold text-blue-600 mt-2">{formatPrice(property.price)}/mois</p>
                 </div>
               </Link>
-            );
-          })}
+          ))}
         </div>
       )}
 

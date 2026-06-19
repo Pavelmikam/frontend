@@ -63,15 +63,17 @@ const HomeNavbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
-          {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="h-9 w-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-              <Home className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 text-lg hidden sm:block tracking-tight">
-              Immo<span className="text-blue-600">Connect</span>
-            </span>
-          </Link>
+{/* ── Logo ── */}
+<Link to="/" className="flex items-center gap-2 flex-shrink-0">
+  <img 
+    src="images/logo2.png" 
+    alt="ImmoConnect" 
+    className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain"
+  />
+  <span className="font-bold text-gray-900 text-base sm:text-lg hidden sm:block tracking-tight">
+    Immo<span className="text-blue-600">Connect</span>
+  </span>
+</Link>
 
           {/* ── Search bar (centre) ── */}
           <form

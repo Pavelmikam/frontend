@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Home, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuth from '@/hooks/useAuth';
@@ -44,6 +44,8 @@ const getPasswordStrength = (password) => {
 const RegisterPage = () => {
   const { register: authRegister, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
   const [globalError, setGlobalError] = useState(null);
   const [passwordValue, setPasswordValue] = useState('');
 
@@ -60,7 +62,7 @@ const RegisterPage = () => {
     try {
       await authRegister(data);
       toast.success('Bienvenue sur ImmoConnect !');
-      navigate(ROUTES.DASHBOARD);
+      navigate(redirect || ROUTES.DASHBOARD);
     } catch (error) {
       if (error.validationErrors) {
         Object.entries(error.validationErrors).forEach(([field, messages]) => {
@@ -75,8 +77,12 @@ const RegisterPage = () => {
   return (
     <div className="w-full max-w-2xl">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center h-12 w-12 bg-blue-600 rounded-xl mb-4">
-          <span className="text-white font-bold text-xl">IC</span>
+        <div className="inline-flex items-center justify-center h-12 w-12  rounded-xl mb-4">
+                    <img 
+    src="images/logo2.png" 
+    alt="ImmoConnect" 
+    className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain"
+  />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Créer un compte</h1>
         <p className="text-gray-500 mt-1">Rejoignez ImmoConnect Cameroun</p>
@@ -179,7 +185,10 @@ const RegisterPage = () => {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Déjà inscrit ?{' '}
-          <Link to={ROUTES.LOGIN} className="text-blue-600 hover:underline font-medium">
+          <Link
+            to={redirect ? `${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirect)}` : ROUTES.LOGIN}
+            className="text-blue-600 hover:underline font-medium"
+          >
             Se connecter
           </Link>
         </p>

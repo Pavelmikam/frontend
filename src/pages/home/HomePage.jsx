@@ -8,10 +8,9 @@ import {
 import { CITIES_CAMEROUN, PROPERTY_TYPES, AMENITIES, ROUTES } from '@/utils/constants';
 
 /* ─────────────────────────────────────────────────────────
-   Données 100 % ImmoConnect
+   Données 100 % ImmoConnect (inchangées)
 ───────────────────────────────────────────────────────── */
 
-// Ce que la plateforme offre RÉELLEMENT
 const FEATURES = [
   {
     icon: <SlidersHorizontal className="h-6 w-6" />,
@@ -51,7 +50,6 @@ const FEATURES = [
   },
 ];
 
-// Workflow réel de la plateforme
 const HOW_IT_WORKS = {
   locataire: [
     {
@@ -95,7 +93,6 @@ const HOW_IT_WORKS = {
   ],
 };
 
-// Villes réelles avec les 15 de la constante CITIES_CAMEROUN
 const CITY_HIGHLIGHTS = [
   { name: 'Yaoundé',   label: 'Capitale politique' },
   { name: 'Douala',    label: 'Capitale économique' },
@@ -106,7 +103,7 @@ const CITY_HIGHLIGHTS = [
 ];
 
 /* ─────────────────────────────────────────────────────────
-   Page
+   Page (UNIQUEMENT CSS CORRIGÉ)
 ───────────────────────────────────────────────────────── */
 
 const HomePage = () => {
@@ -124,107 +121,114 @@ const HomePage = () => {
   };
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* ══════════════════════════════════════════
-          HERO
+          HERO - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 overflow-hidden">
-        {/* Cercles décoratifs discrets */}
+<section 
+  className="relative py-12 sm:py-16 md:py-20 lg:py-28 overflow-hidden"
+  style={{
+    backgroundImage: 'url("images/maison1.jpg")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }}
+>
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-white/[0.04]" />
-          <div className="absolute -bottom-28 -left-12 w-72 h-72 rounded-full bg-white/[0.04]" />
+          <div className="absolute -top-20 -right-20 w-64 sm:w-80 md:w-96 h-64 sm:h-80 md:h-96 rounded-full bg-white/[0.04]" />
+          <div className="absolute -bottom-28 -left-12 w-56 sm:w-64 md:w-72 h-56 sm:h-64 md:h-72 rounded-full bg-white/[0.04]" />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4">
-            Louez votre logement<br />au <span className="text-blue-200">Cameroun</span>
-          </h1>
-          <p className="text-blue-100 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">
-            Appartements, studios, chambres, maisons — des annonces vérifiées dans 15 villes.
-            Trouvez, sauvegardez et contactez directement les propriétaires.
-          </p>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-3 sm:mb-4">
+              Louez votre logement<br />au <span className="text-blue-200">Cameroun</span>
+            </h1>
+            <p className="text-blue-100 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 max-w-2xl mx-auto px-4">
+              Appartements, studios, chambres, maisons — des annonces vérifiées dans 10 villes.
+              Trouvez, sauvegardez et contactez directement les propriétaires.
+            </p>
 
-          {/* Formulaire de recherche */}
-          <form
-            onSubmit={handleSearch}
-            className="bg-white rounded-2xl shadow-2xl p-3 max-w-3xl mx-auto flex flex-col sm:flex-row gap-2"
-          >
-            <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-400 transition-all">
-              <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <input
-                type="text"
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                placeholder="Ville ou quartier..."
-                className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent"
-                list="hero-cities"
-              />
-              <datalist id="hero-cities">
-                {CITIES_CAMEROUN.map((c) => <option key={c} value={c} />)}
-              </datalist>
-            </div>
-
-            <div className="sm:w-48 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-400 transition-all">
-              <Building2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <select
-                value={searchType}
-                onChange={(e) => setSearchType(e.target.value)}
-                className="flex-1 text-sm text-gray-700 outline-none bg-transparent"
-              >
-                <option value="">Type de bien</option>
-                {PROPERTY_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+            <form
+              onSubmit={handleSearch}
+              className="bg-white rounded-2xl shadow-2xl p-3 max-w-3xl mx-auto flex flex-col sm:flex-row gap-2"
             >
-              <Search className="h-4 w-4" />
-              Rechercher
-            </button>
-          </form>
+              <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-400 transition-all">
+                <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  placeholder="Ville ou quartier..."
+                  className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent min-w-0"
+                  list="hero-cities"
+                />
+                <datalist id="hero-cities">
+                  {CITIES_CAMEROUN.map((c) => <option key={c} value={c} />)}
+                </datalist>
+              </div>
 
-          {/* Raccourcis types de biens */}
-          <div className="flex flex-wrap justify-center gap-2 mt-5">
-            {PROPERTY_TYPES.slice(0, 5).map((t) => (
+              <div className="sm:w-48 flex items-center gap-2 border border-gray-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-400 transition-all">
+                <Building2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <select
+                  value={searchType}
+                  onChange={(e) => setSearchType(e.target.value)}
+                  className="flex-1 text-sm text-gray-700 outline-none bg-transparent min-w-0"
+                >
+                  <option value="">Type de bien</option>
+                  {PROPERTY_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <button
-                key={t.value}
-                type="button"
-                onClick={() => navigate(`/annonces?type=${t.value}`)}
-                className="text-xs text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/20"
+                type="submit"
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-colors whitespace-nowrap"
               >
-                {t.label}
+                <Search className="h-4 w-4" />
+                Rechercher
               </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => navigate('/annonces')}
-              className="text-xs text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/20"
-            >
-              Voir tout →
-            </button>
+            </form>
+
+            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-4 sm:mt-5 px-4">
+              {PROPERTY_TYPES.slice(0, 5).map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => navigate(`/annonces?type=${t.value}`)}
+                  className="text-xs sm:text-sm text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 sm:px-3 py-1.5 rounded-full transition-colors border border-white/20"
+                >
+                  {t.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => navigate('/annonces')}
+                className="text-xs sm:text-sm text-white/80 hover:text-white bg-white/10 hover:bg-white/20 px-2.5 sm:px-3 py-1.5 rounded-full transition-colors border border-white/20"
+              >
+                Voir tout →
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════
-          TYPES DE LOGEMENTS (navigation rapide)
+          TYPES DE LOGEMENTS - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="border-b border-gray-100 py-8 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <section className="border-b border-gray-100 py-5 sm:py-8 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {PROPERTY_TYPES.map((t) => (
               <button
                 key={t.value}
                 type="button"
                 onClick={() => navigate(`/annonces?type=${t.value}`)}
-                className="flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 transition-all text-sm text-gray-600 font-medium group"
+                className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 transition-all text-xs sm:text-sm text-gray-600 font-medium group"
               >
-                <Home className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <Home className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 {t.label}
               </button>
             ))}
@@ -233,30 +237,30 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          CE QUE VOUS POUVEZ FAIRE
+          CE QUE VOUS POUVEZ FAIRE - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12">
+      <section className="py-14 sm:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center sm:text-left mb-8 sm:mb-12">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">La plateforme</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
               Tout ce qu'ImmoConnect vous offre
             </h2>
-            <p className="text-gray-500 max-w-xl">
+            <p className="text-gray-500 max-w-xl mx-auto sm:mx-0">
               Des outils pensés pour simplifier la recherche de logement en location au Cameroun.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {FEATURES.map(({ icon, color, title, desc }) => (
               <div
                 key={title}
-                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
-                <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4 ${color}`}>
+                <div className={`inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl mb-3 sm:mb-4 ${color}`}>
                   {icon}
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
+                <h3 className="font-bold text-gray-900 mb-1.5 sm:mb-2">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -265,17 +269,16 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          COMMENT ÇA MARCHE (workflow réel)
+          COMMENT ÇA MARCHE - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Fonctionnement</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Comment ça marche ?</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Comment ça marche ?</h2>
           </div>
 
-          {/* Onglets rôles */}
-          <div className="flex justify-center gap-2 mb-12">
+          <div className="flex flex-wrap justify-center gap-2 mb-8 sm:mb-12">
             {[
               { key: 'locataire',    label: 'Je cherche à louer' },
               { key: 'proprietaire', label: 'Je propose un bien' },
@@ -284,7 +287,7 @@ const HomePage = () => {
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all border ${
+                className={`px-4 sm:px-6 py-2.5 rounded-full text-sm font-semibold transition-all border ${
                   tab === key
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
@@ -295,23 +298,23 @@ const HomePage = () => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {HOW_IT_WORKS[tab].map(({ step, icon, title, desc }) => (
-              <div key={step} className="flex flex-col items-center text-center md:items-start md:text-left">
-                <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white mb-4 shadow-md shadow-blue-200 flex-shrink-0">
+              <div key={step} className="flex flex-col items-center text-center">
+                <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white mb-4 shadow-md shadow-blue-200">
                   {icon}
                 </div>
                 <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Étape {step}</div>
                 <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                <p className="text-gray-500 text-sm leading-relaxed max-w-xs">{desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-10 sm:mt-12">
             <Link
               to={tab === 'locataire' ? ROUTES.ANNONCES : ROUTES.REGISTER}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-full transition-colors"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-full transition-colors"
             >
               {tab === 'locataire' ? 'Voir les annonces' : 'Créer un compte propriétaire'}
               <ArrowRight className="h-4 w-4" />
@@ -321,50 +324,48 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          VILLES COUVERTES
+          VILLES COUVERTES - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10">
+      <section className="py-14 sm:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10">
             <div>
               <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Couverture</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                15 villes au Cameroun
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">
+                10 villes au Cameroun
               </h2>
             </div>
             <Link
               to={ROUTES.ANNONCES}
-              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline"
+              className="hidden sm:flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline mt-3 sm:mt-0"
             >
               Toutes les villes <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Villes mises en avant */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
             {CITY_HIGHLIGHTS.map(({ name, label }) => (
               <button
                 key={name}
                 type="button"
                 onClick={() => navigate(`/annonces?city=${encodeURIComponent(name)}`)}
-                className="group relative bg-white rounded-2xl border border-gray-200 p-6 text-left hover:border-blue-400 hover:shadow-md transition-all duration-200"
+                className="group relative bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 text-left hover:border-blue-400 hover:shadow-md transition-all duration-200"
               >
-                <MapPin className="h-5 w-5 text-blue-500 mb-3" />
-                <p className="font-bold text-gray-900 text-lg">{name}</p>
+                <MapPin className="h-5 w-5 text-blue-500 mb-2 sm:mb-3" />
+                <p className="font-bold text-gray-900 text-base sm:text-lg">{name}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-                <ArrowRight className="h-4 w-4 text-blue-400 absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowRight className="h-4 w-4 text-blue-400 absolute bottom-3 sm:bottom-5 right-3 sm:right-5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>
 
-          {/* Autres villes en badges */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {CITIES_CAMEROUN.filter((c) => !CITY_HIGHLIGHTS.find((h) => h.name === c)).map((city) => (
               <button
                 key={city}
                 type="button"
                 onClick={() => navigate(`/annonces?city=${encodeURIComponent(city)}`)}
-                className="text-sm text-gray-600 border border-gray-200 hover:border-blue-400 hover:text-blue-600 px-4 py-2 rounded-full transition-colors"
+                className="text-xs sm:text-sm text-gray-600 border border-gray-200 hover:border-blue-400 hover:text-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors"
               >
                 {city}
               </button>
@@ -374,27 +375,27 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          ÉQUIPEMENTS DISPONIBLES
+          ÉQUIPEMENTS DISPONIBLES - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Filtres disponibles</p>
-            <h2 className="text-3xl font-extrabold text-gray-900">Recherchez par équipements</h2>
-            <p className="text-gray-500 mt-2 max-w-lg mx-auto text-sm">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">Recherchez par équipements</h2>
+            <p className="text-gray-500 mt-2 max-w-lg mx-auto text-sm px-4">
               Chaque annonce précise ses équipements. Vous pouvez filtrer votre recherche pour n'afficher que les biens qui ont TOUS les équipements sélectionnés.
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
             {AMENITIES.map(({ value, label, icon }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => navigate(`/annonces?amenities[]=${value}`)}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-full text-sm text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2.5 border border-gray-200 rounded-full text-xs sm:text-sm text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all"
               >
-                <span>{icon}</span>
+                <span className="text-base sm:text-lg">{icon}</span>
                 {label}
               </button>
             ))}
@@ -403,11 +404,11 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          GARANTIES DE LA PLATEFORME
+          GARANTIES - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <section className="py-14 sm:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
             {[
               {
                 icon: <Shield className="h-8 w-8 mx-auto text-blue-600 mb-4" />,
@@ -425,7 +426,7 @@ const HomePage = () => {
                 desc: 'Chaque annonce affiche son statut exact : disponible, sous réservation, loué. Toujours à jour.',
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white rounded-2xl p-8 border border-gray-100">
+              <div key={title} className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 hover:shadow-md transition-shadow">
                 {icon}
                 <h3 className="font-bold text-gray-900 text-lg mb-2">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
@@ -436,17 +437,16 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          CTA — DEUX PUBLICS
+          CTA - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
 
-            {/* Locataire */}
-            <div className="bg-blue-600 rounded-3xl p-10 text-white flex flex-col justify-between">
+            <div className="bg-blue-600 rounded-3xl p-8 sm:p-10 text-white flex flex-col justify-between">
               <div>
                 <Search className="h-8 w-8 mb-4 opacity-80" />
-                <h3 className="text-2xl font-extrabold mb-3">Vous cherchez à louer ?</h3>
+                <h3 className="text-xl sm:text-2xl font-extrabold mb-3">Vous cherchez à louer ?</h3>
                 <p className="text-blue-100 text-sm leading-relaxed mb-6">
                   Parcourez des centaines d'annonces de logements disponibles dans toutes les grandes villes
                   du Cameroun. Filtres avancés, carte interactive, favoris et alertes email inclus.
@@ -460,11 +460,10 @@ const HomePage = () => {
               </Link>
             </div>
 
-            {/* Propriétaire */}
-            <div className="bg-gray-900 rounded-3xl p-10 text-white flex flex-col justify-between">
+            <div className="bg-gray-900 rounded-3xl p-8 sm:p-10 text-white flex flex-col justify-between">
               <div>
                 <Building2 className="h-8 w-8 mb-4 opacity-80" />
-                <h3 className="text-2xl font-extrabold mb-3">Vous avez un bien à louer ?</h3>
+                <h3 className="text-xl sm:text-2xl font-extrabold mb-3">Vous avez un bien à louer ?</h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-6">
                   Publiez votre annonce en quelques minutes. Ajoutez photos, description, équipements et prix.
                   Notre équipe la valide et elle devient visible par tous les locataires de la plateforme.
@@ -483,26 +482,26 @@ const HomePage = () => {
       </section>
 
       {/* ══════════════════════════════════════════
-          FOOTER
+          FOOTER - CSS CORRIGÉ
       ══════════════════════════════════════════ */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+      <footer className="bg-gray-900 text-gray-400 py-10 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-10">
 
-            {/* Marque */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Home className="h-4 w-4 text-white" />
-                </div>
+                  <img 
+                    src="images/logo2.png" 
+                    alt="ImmoConnect" 
+                    className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain"
+                  />
                 <span className="font-bold text-white text-lg">ImmoConnect</span>
               </div>
-              <p className="text-sm leading-relaxed">
+              <p className="text-sm leading-relaxed max-w-xs">
                 Plateforme de location immobilière au Cameroun. Locataires et propriétaires en contact direct.
               </p>
             </div>
 
-            {/* Locataires */}
             <div>
               <h4 className="font-semibold text-white mb-4 text-sm">Locataires</h4>
               <ul className="space-y-2 text-sm">
@@ -512,7 +511,6 @@ const HomePage = () => {
               </ul>
             </div>
 
-            {/* Propriétaires */}
             <div>
               <h4 className="font-semibold text-white mb-4 text-sm">Propriétaires</h4>
               <ul className="space-y-2 text-sm">
@@ -522,7 +520,6 @@ const HomePage = () => {
               </ul>
             </div>
 
-            {/* Villes */}
             <div>
               <h4 className="font-semibold text-white mb-4 text-sm">Villes</h4>
               <ul className="space-y-2 text-sm">
@@ -537,7 +534,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <div className="border-t border-gray-800 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
             <p>© {new Date().getFullYear()} ImmoConnect Cameroun. Tous droits réservés.</p>
             <div className="flex gap-5">
               <span className="cursor-pointer hover:text-white transition-colors">Confidentialité</span>

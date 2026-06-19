@@ -119,8 +119,12 @@ const Navbar = () => {
             {/* Logo + nav links */}
             <div className="flex items-center gap-4">
               <Link to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.ANNONCES} className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">IC</span>
+                <div className="h-8 w-8  rounded-lg flex items-center justify-center">
+                            <img 
+                              src="images/logo2.png" 
+                              alt="ImmoConnect" 
+                              className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain"
+                            />
                 </div>
                 <span className="font-bold text-gray-900 text-lg hidden sm:block">ImmoConnect</span>
               </Link>

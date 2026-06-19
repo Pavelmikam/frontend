@@ -110,8 +110,28 @@ const PropertyDetailPage = () => {
   const isPropertyAvailable = property.status === 'active';
   const isPropertyUnavailable = property.status === 'sous_reservation' || property.status === 'loue';
 
+  const loginRedirect = `${ROUTES.LOGIN}?redirect=${encodeURIComponent(`${ROUTES.ANNONCES}/${id}`)}`;
+
   const renderApplySection = () => {
-    if (!isAuthenticated || isOwner || isAdmin || !isLocataire) return null;
+    if (isOwner || isAdmin) return null;
+
+    if (!isAuthenticated) {
+      if (!isPropertyAvailable) return null;
+      return (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <Button
+            variant="primary"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={() => navigate(loginRedirect)}
+          >
+            <Send className="h-4 w-4" />
+            Postuler
+          </Button>
+        </div>
+      );
+    }
+
+    if (!isLocataire) return null;
 
     if (!isEmailVerified) {
       return (
@@ -463,25 +483,35 @@ const PropertyDetailPage = () => {
                 </div>
               )}
 
-              {/* Contact button for tenant (visible for all logged-in locataires) */}
-              {isLocataire && !isOwner && isEmailVerified && (
+              {/* Contact button */}
+              {!isOwner && !isAdmin && (
                 <div className="mt-3">
-                  {existingConversation ? (
-                    <Link
-                      to={`/messagerie/${existingConversation.id}`}
-                      className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      Voir la conversation
-                    </Link>
-                  ) : (
+                  {!isAuthenticated ? (
                     <button
-                      onClick={() => setShowContactModal(true)}
+                      onClick={() => navigate(loginRedirect)}
                       className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
                     >
                       <MessageSquare className="h-4 w-4" />
                       Contacter le propriétaire
                     </button>
+                  ) : isLocataire && isEmailVerified && (
+                    existingConversation ? (
+                      <Link
+                        to={`/messagerie/${existingConversation.id}`}
+                        className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        Voir la conversation
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => setShowContactModal(true)}
+                        className="w-full flex items-center justify-center gap-2 border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-medium py-2.5 rounded-lg transition-colors"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        Contacter le propriétaire
+                      </button>
+                    )
                   )}
                 </div>
               )}

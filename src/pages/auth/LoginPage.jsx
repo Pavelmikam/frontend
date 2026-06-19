@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
@@ -18,6 +18,8 @@ const schema = z.object({
 const LoginPage = () => {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
   const [globalError, setGlobalError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,7 +31,7 @@ const LoginPage = () => {
     setGlobalError(null);
     try {
       await login(data);
-      navigate(ROUTES.DASHBOARD);
+      navigate(redirect || ROUTES.DASHBOARD);
     } catch (error) {
       const status = error.response?.status;
       if (status === 422 && error.validationErrors) {
@@ -45,8 +47,12 @@ const LoginPage = () => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center h-12 w-12 bg-blue-600 rounded-xl mb-4">
-          <span className="text-white font-bold text-xl">IC</span>
+        <div className="inline-flex items-center justify-center h-12 w-12  rounded-xl mb-4">
+          <img 
+    src="images/logo2.png" 
+    alt="ImmoConnect" 
+    className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain"
+  />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Connexion</h1>
         <p className="text-gray-500 mt-1">Accédez à votre espace ImmoConnect</p>
@@ -122,7 +128,10 @@ const LoginPage = () => {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Pas encore de compte ?{' '}
-          <Link to={ROUTES.REGISTER} className="text-blue-600 hover:underline font-medium">
+          <Link
+            to={redirect ? `${ROUTES.REGISTER}?redirect=${encodeURIComponent(redirect)}` : ROUTES.REGISTER}
+            className="text-blue-600 hover:underline font-medium"
+          >
             Créer un compte
           </Link>
         </p>
